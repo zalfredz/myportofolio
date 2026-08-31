@@ -5,12 +5,15 @@
 }
 
 :root {
-    --ink: #1c1917;
-    --paper: #faf6f0;
-    --accent: #d95d39;
-    --accent-dark: #a8442a;
-    --line: #e3d9c9;
-    --text-muted: #6b6459;
+    --ink: #F5F5F7;
+    --paper: #121218;
+    --card: #1C1C24;
+    --accent: #7ED9A8;
+    --accent-dark: #4A9B6E;
+    --accent-secondary: #C7C9F5;
+    --accent-secondary-text: #1A1A2E;
+    --line: #2E2E38;
+    --text-muted: #a9a9d7;
     --radius: 4px;
 }
 
@@ -86,7 +89,7 @@ h1,
     font-size: 0.85rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--accent-dark);
+    color: var(--accent);
     font-weight: 700;
     margin-bottom: 0.75rem;
 }
@@ -97,7 +100,7 @@ h1,
 }
 
 .bio {
-    color: var(--text-muted);
+    color: var(--text);
     max-width: 480px;
     margin-bottom: 1.5rem;
 }
@@ -112,7 +115,7 @@ h1,
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--text-muted);
+    color: var(--accent);
     margin-bottom: 0.15rem;
 }
 
@@ -131,8 +134,8 @@ h1,
     font-size: 0.85rem;
     font-weight: 600;
     text-decoration: none;
-    color: var(--paper);
-    background-color: var(--ink);
+    color: var(--accent-secondary-text);
+    background-color: var(--accent-secondary);
     border-radius: var(--radius);
     padding: 0.5rem 1.1rem;
     transition: background-color 0.2s ease;
