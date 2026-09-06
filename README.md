@@ -6,8 +6,8 @@ Kelas : PBP C
 
 Semester : 3
 
-### Assignment 1
-1. Saya menggunakan elemen HTML5 seperti <header>, <nav>, <main>, <section>, <article>, <figure>, dan <footer>. Elemen <section> digunakan untuk membagi halaman menjadi Profile, Experience, dan Education. Section education juga menggunakan <article>, sedangkan foto-foto dan captionnya menggunakan <figure> & <figcaption>. Dengan struktur ini page web lebih rapi, mudah dibaca, dan memudahkan CSS menargetkan bagian pada static web.
+### Tugas 1
+1. Saya menggunakan elemen HTML5 seperti `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<figure>`, dan `<footer>`. Elemen `<section>` digunakan untuk membagi halaman menjadi Profile, Experience, dan Education. Section education juga menggunakan `<article>`, sedangkan foto-foto dan captionnya menggunakan `<figure>` & `<figcaption>`. Dengan struktur ini page web lebih rapi, mudah dibaca, dan memudahkan CSS menargetkan bagian pada static web.
 
 2. Tantangan utamanya adalah menjaga layout agar tetap stabil dan pas saat ukuran layar mengecil. Di website desktop, section profile menggunakan grid untuk menampilkan teks dan foto secara berdampingan, sedangkan di mobile layoutnya diubah menjadi satu kolom agar teks tidak terpotong. Pada section education, ukuran logo dan kolom timeline diperkecil agar informasi tetap terbaca. Saya mengutamakan judul dan informasi utama dulu baru elemen visual seperti foto, logo, tombol, dan jaraknya yang disesuaikan melalui media query.
 
@@ -23,21 +23,21 @@ bisa di cek melalui link berikut: https://www.kimi.ai/share/1a076cef-ed22-8326-8
 
 
 ### Implementasi SARAN KIMI (AI):
-1. Section Profile
+`Section Profile`
 Saran solusi dari AI:
 Gunakan min-height daripada tinggi tetap agar section tidak memotong konten. Atur konten utama dengan flexbox atau grid dan hindari absolute pada teks atau foto utama.
 
 Implementasi saya:
 Saya menggunakan min-height: 100vh dan min-height: 100dvh pada section. Teks dan foto diatur memakai flexbox serta grid, sehingga konten tetap berada dalam alur layout.
 
-2. Experience section
+`Section Experience`
 Saran solusi dari AI:
 Jangan memaksa experience selalu muat dalam satu layar karena isi section dapat lebih panjang. Lebih baik biarkan section mengikuti tinggi konten dan dapat di scroll.
 
 Implementasi saya:
 Saya tidak menggunakan height: 100vh pada experience. Section memakai padding biasa dan carousel mengikuti tinggi gambar serta deskripsinya, sehingga tidak memotong judul atau teks.
 
-3. Logo di section Education
+`Logo di section Education`
 Saran solusi dari AI:
 Periksa apakah garis pada logo berasal dari border, outline, atau box-shadow CSS. Jika garis masih ada setelah CSS dibersihkan, kemungkinan berasal dari file PNG.
 
