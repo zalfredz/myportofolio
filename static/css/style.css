@@ -389,8 +389,8 @@ h1,
 .education-timeline::before {
     content: "";
     position: absolute;
-    top: 36px;
-    bottom: 36px;
+    top: 48px;
+    bottom: 48px;
     left: 11px;
     width: 1px;
     background-color: var(--line);
@@ -398,7 +398,7 @@ h1,
 
 .education-card {
     display: grid;
-    grid-template-columns: 24px 72px 1fr auto;
+    grid-template-columns: 24px 84px 1fr auto;
     align-items: center;
     gap: 2rem;
     padding: 2.2rem 0;
@@ -419,15 +419,24 @@ h1,
 .education-logo {
     display: grid;
     place-items: center;
-    width: 72px;
-    height: 72px;
-    border: 1px dashed var(--line);
+    width: 84px;
+    height: 96px;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    overflow: visible;
 }
 
 .education-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    image-rendering: auto;
 }
 
 .education-label {
