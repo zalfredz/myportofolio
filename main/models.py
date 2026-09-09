@@ -18,9 +18,12 @@ class Experience(models.Model):
     thumbnail = models.URLField(blank=True, null=True)
     started_at = models.DateTimeField(auto_now_add=True)
     ended_at = models.DateTimeField(blank=True, null=True)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+
     def __str__(self):
         return self.title
-    
+
     @property
     def is_ongoing(self):
-        return self.ended_at is None
+        return self.end_date is None

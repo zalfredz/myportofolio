@@ -1,6 +1,7 @@
+from datetime import date
+
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
 
 from main.models import Experience
 
@@ -11,6 +12,7 @@ class MainTest(TestCase):
             title="Asisten Dosen PBP",
             description="Membantu mahasiswa memahami pengembangan web.",
             category="part-time",
+            start_date=date(2026, 1, 1),
         )
 
     def test_main_url_is_accessible(self):
@@ -38,8 +40,8 @@ class MainTest(TestCase):
         self.assertTemplateUsed(response, "experience.html")
         self.assertContains(response, self.experience.title)
         self.assertContains(response, self.experience.description)
-        self.assertContains(response, "Part-Time")
-        self.assertContains(response, "Sedang berlangsung")
+        self.assertContains(response, "Jan 2026")
+        self.assertContains(response, "Present")
         self.assertContains(response, f'href="{reverse("main:show_main")}"')
 
     def test_empty_experience_page(self):
@@ -49,10 +51,10 @@ class MainTest(TestCase):
         self.assertContains(response, "Belum ada pengalaman yang ditambahkan.")
 
     def test_completed_experience(self):
-        self.experience.ended_at = timezone.now()
+        self.experience.end_date = date(2026, 2, 1)
         self.experience.save()
         response = self.client.get(reverse("main:show_experience"))
 
         self.assertFalse(self.experience.is_ongoing)
-        self.assertContains(response, "Selesai")
-        self.assertNotContains(response, "Sedang berlangsung")
+        self.assertContains(response, "Feb 2026")
+        self.assertNotContains(response, "Present")
