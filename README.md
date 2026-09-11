@@ -43,3 +43,25 @@ Periksa apakah garis pada logo berasal dari border, outline, atau box-shadow CSS
 
 Implementasi saya:
 Saya menghapus border putus-putus pada container logo Education dan menambahkan reset border: none, outline: none, serta box-shadow: none pada container dan gambar logo.
+
+
+### Tugas 2
+1. Saat pengguna membuka `/projects/`, permintaan pertama diterima oleh `portofolio/urls.py`. File URL ini meneruskan path ke `main/urls.py` melalui `include("main.urls")`. Di URL, route `projects/` dipetakan ke view `show_projects`. View `show_projects` mengambil seluruh data dari model `Project`, misalnya dengan `Project.objects.order_by("-created_at")`. Data tersebut dimasukkan ke context sebagai `project_list`, lalu view menjalankan `render(request, "projects.html", context)`. Template `projects.html` melakukan perulangan `{% for project in project_list %}` untuk membuat section setiap project. Hasil HTML akhirnya dikirim Django sebagai response dan ditampilkan browser.
+
+2. Menyimpan data di model membuat data terpisah dari tampilan. Template cukup mengatur bagaimana data ditampilkan, sedangkan model mengatur struktur dan penyimpanan data di database. Dampaknya, kalau mau menambah, mengubah, atau menghapus bagian Project, cukup ngubah data database tanpa menulis ulang HTML atau mengubah struktur halamannya. Halaman juga otomatis bisa menampilkan banyak Project. Hal ini membuat aplikasi lebih mudah dirawat, lebih konsisten, dan lebih mudah dikembangkan.
+
+3. `makemigrations` membuat file migrasi berdasarkan perubahan pada model, sedangkan `migrate` menjalankan file migrasi tersebut untuk benar-benar mengubah struktur database.
+
+Contohnya, saat menambahkan model `Project` dengan field `title`, `description`, dan `technology_stack`, 
+jalankan:
+`python manage.py makemigrations`
+Django kemudian membuat migrasi seperti `0003_project.py`.
+
+Setelah itu jalankan:
+`python manage.py migrate`
+Command tersebut membuat tabel `Project` di database. Kedua command juga diperlukan jika menambahkan field baru, misalnya `project_url`, ke model yang sudah ada.
+
+### AI Disclosure
+Saya juga menggunakan bantuan AI (model KIMI) untuk membuat animasi gambar yang ketika dipencet bisa membuat pengguna direct ke website github pada page Projects saya. Penggunaan AI tersebut berfungsi sebagai alat bantu dalam proses pemahaman cara implementasinya.
+
+Bisa di cek melalui link berikut: https://www.kimi.ai/share/1a08fca3-4962-86db-8000-0000ea387eb2.
