@@ -23,6 +23,11 @@ ALLOWED_HOSTS = [
     'alfredo-nathaniel-myportofolio.pws.cs.ui.ac.id',
 ]
 
+# gunakan https:// untuk trailing urlnya
+CSRF_TRUSTED_ORIGINS = [
+    'https://alfredo-nathaniel-myportofolio.pws.cs.ui.ac.id',
+]
+
 PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
