@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block meta %}
-    {% if project %}
-        <title>Edit Project - {{ name }}</title>
+    {% if experience %}
+        <title>Edit Experience - {{ name }}</title>
     {% else %}
-        <title>Add Project - {{ name }}</title>
+        <title>Add Experience - {{ name }}</title>
     {% endif %}
 {% endblock meta %}
 
@@ -12,15 +12,15 @@
     <main>
         <section class="experience-section">
             <div class="container">
-                {% if project %}
-                    <h1>Edit Project</h1>
+                {% if experience %}
+                    <h1>Edit Experience</h1>
                     <form method="post"
-                          action="{% url 'main:update_project' project.id %}"
+                          action="{% url 'main:update_experience' experience.id %}"
                           class="project-form">
                 {% else %}
-                    <h1>Add New Project</h1>
+                    <h1>Add New Experience</h1>
                     <form method="post"
-                          action="{% url 'main:create_project' %}"
+                          action="{% url 'main:create_experience' %}"
                           class="project-form">
                 {% endif %}
                     {% csrf_token %}
@@ -34,9 +34,9 @@
                         </div>
                     {% endfor %}
                     <button type="submit" class="button">
-                        {% if project %}Simpan Perubahan{% else %}Tambah Project{% endif %}
+                        {% if experience %}Simpan Perubahan{% else %}Tambah Experience{% endif %}
                     </button>
-                    <a href="{% url 'main:show_projects' %}"
+                    <a href="{% url 'main:show_experience' %}"
                        class="button button-secondary">Batal</a>
                 </form>
             </div>

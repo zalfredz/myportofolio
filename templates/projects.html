@@ -58,6 +58,8 @@
                                 <div class="project-description">{{ project.description }}</div>
                                 <div class="project-card-actions">
                                     <div class="project-actions">
+                                        <a href="{% url 'main:update_project' project.id %}"
+                                           class="button button-secondary">Edit Project</a>
                                         {% include "components/project_delete_modal.html" with project=project %}
                                     </div>
                                 </div>

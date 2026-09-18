@@ -1,6 +1,48 @@
-from django.forms import ModelForm, Textarea, TextInput, URLInput
+from django.forms import DateInput, ModelForm, Textarea, TextInput, URLInput
 
-from main.models import Project
+from main.models import Experience, Project
+
+
+class ExperienceForm(ModelForm):
+    class Meta:
+        model = Experience
+        fields = [
+            "title",
+            "description",
+            "category",
+            "thumbnail",
+            "start_date",
+            "end_date",
+        ]
+        labels = {
+            "title": "Nama Pengalaman",
+            "description": "Deskripsi Pengalaman",
+            "category": "Kategori",
+            "thumbnail": "URL Gambar",
+            "start_date": "Tanggal Mulai",
+            "end_date": "Tanggal Selesai",
+        }
+        widgets = {
+            "title": TextInput(
+                attrs={
+                    "placeholder": "Deputy of Departemen Keilmuan Mahasiswa",
+                    "maxlength": 255,
+                }
+            ),
+            "description": Textarea(
+                attrs={
+                    "placeholder": "Ceritakan pengalamanmu",
+                    "rows": 5,
+                }
+            ),
+            "thumbnail": URLInput(
+                attrs={
+                    "placeholder": "https://example.com/image.jpg",
+                }
+            ),
+            "start_date": DateInput(attrs={"type": "date"}),
+            "end_date": DateInput(attrs={"type": "date"}),
+        }
 
 
 class ProjectForm(ModelForm):

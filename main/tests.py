@@ -43,6 +43,7 @@ class MainTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experience.html")
+        self.assertTemplateUsed(response, "base.html")
         self.assertContains(response, self.experience.title)
         self.assertContains(response, self.experience.description)
         self.assertContains(response, "Jan 2026")
@@ -64,6 +65,62 @@ class MainTest(TestCase):
         self.assertContains(response, "Feb 2026")
         self.assertNotContains(response, "Present")
 
+    def test_experiences_json(self):
+        response = self.client.get(reverse("main:get_experiences_json"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertEqual(response.json()[0]["fields"]["title"], self.experience.title)
+
+    def test_create_experience(self):
+        response = self.client.post(
+            reverse("main:create_experience"),
+            {
+                "title": "Public Relations Intern",
+                "description": "Managed communication strategies.",
+                "category": "internship",
+                "thumbnail": "",
+                "start_date": "2025-09-01",
+                "end_date": "2025-12-01",
+            },
+        )
+
+        self.assertRedirects(response, reverse("main:show_experience"))
+        self.assertTrue(
+            Experience.objects.filter(title="Public Relations Intern").exists()
+        )
+
+    def test_update_experience(self):
+        response = self.client.post(
+            reverse(
+                "main:update_experience",
+                kwargs={"experience_id": self.experience.id},
+            ),
+            {
+                "title": "Updated Experience",
+                "description": self.experience.description,
+                "category": self.experience.category,
+                "thumbnail": "",
+                "start_date": "2026-01-01",
+                "end_date": "",
+            },
+        )
+
+        self.assertRedirects(response, reverse("main:show_experience"))
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, "Updated Experience")
+
+    def test_delete_experience(self):
+        response = self.client.post(
+            reverse(
+                "main:delete_experience",
+                kwargs={"experience_id": self.experience.id},
+            )
+        )
+
+        self.assertRedirects(response, reverse("main:show_experience"))
+        self.assertFalse(Experience.objects.filter(pk=self.experience.id).exists())
+
     def test_projects_url_is_accessible(self):
         response = self.client.get(reverse("main:show_projects"))
 
@@ -75,6 +132,25 @@ class MainTest(TestCase):
 
         self.assertContains(response, self.project.title)
         self.assertContains(response, self.project.description)
+
+    def test_update_project(self):
+        response = self.client.post(
+            reverse(
+                "main:update_project",
+                kwargs={"project_id": self.project.id},
+            ),
+            {
+                "title": "FocusBuddy Updated",
+                "description": self.project.description,
+                "technology_stack": self.project.technology_stack,
+                "project_url": "",
+                "project_image_url": "",
+            },
+        )
+
+        self.assertRedirects(response, reverse("main:show_projects"))
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.title, "FocusBuddy Updated")
 
     def test_empty_projects_page(self):
         Project.objects.all().delete()
