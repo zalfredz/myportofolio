@@ -1,9 +1,15 @@
 <button type="button"
-        class="button button-danger"
+        class="experience-action experience-action--delete"
         popovertarget="delete-experience-{{ experience.id }}"
         aria-label="Hapus {{ experience.title }}"
         title="Hapus pengalaman">
-    Hapus Experience
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h16"></path>
+        <path d="M9 7V4h6v3"></path>
+        <path d="m6 7 1 13h10l1-13"></path>
+        <path d="M10 11v5M14 11v5"></path>
+    </svg>
+    <span>Hapus Experience</span>
 </button>
 
 <div id="delete-experience-{{ experience.id }}"

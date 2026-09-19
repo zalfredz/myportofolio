@@ -54,7 +54,57 @@ class MainTest(TestCase):
         Experience.objects.all().delete()
         response = self.client.get(reverse("main:show_experience"))
 
-        self.assertContains(response, "Belum ada pengalaman yang ditambahkan.")
+        self.assertContains(response, "No experience yet")
+
+    def test_experience_search(self):
+        Experience.objects.create(
+            title="Unrelated Volunteer Role",
+            description="Community program.",
+            category="volunteer",
+            start_date=date(2025, 1, 1),
+        )
+
+        response = self.client.get(
+            reverse("main:get_experiences_json"),
+            {"q": "Asisten Dosen"},
+        )
+        titles = [item["fields"]["title"] for item in response.json()]
+
+        self.assertIn(self.experience.title, titles)
+        self.assertNotIn("Unrelated Volunteer Role", titles)
+
+    def test_experience_category_filter(self):
+        volunteer = Experience.objects.create(
+            title="Volunteer Role",
+            description="Community program.",
+            category="volunteer",
+            start_date=date(2025, 1, 1),
+        )
+
+        response = self.client.get(
+            reverse("main:get_experiences_json"),
+            {"category": "volunteer"},
+        )
+        titles = [item["fields"]["title"] for item in response.json()]
+
+        self.assertIn(volunteer.title, titles)
+        self.assertNotIn(self.experience.title, titles)
+
+    def test_experience_oldest_sort(self):
+        older = Experience.objects.create(
+            title="Older Role",
+            description="An earlier experience.",
+            category="internship",
+            start_date=date(2024, 1, 1),
+        )
+
+        response = self.client.get(
+            reverse("main:get_experiences_json"),
+            {"sort": "oldest"},
+        )
+        titles = [item["fields"]["title"] for item in response.json()]
+
+        self.assertEqual(titles[0], older.title)
 
     def test_completed_experience(self):
         self.experience.end_date = date(2026, 2, 1)
