@@ -16,28 +16,102 @@
                     <h1>Edit Experience</h1>
                     <form method="post"
                           action="{% url 'main:update_experience' experience.id %}"
-                          class="project-form">
+                          class="experience-editor">
                 {% else %}
                     <h1>Add New Experience</h1>
                     <form method="post"
                           action="{% url 'main:create_experience' %}"
-                          class="project-form">
+                          class="experience-editor">
                 {% endif %}
                     {% csrf_token %}
-                    {% for field in form %}
-                        <div class="form-group">
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                            {% for error in field.errors %}
-                                <p class="form-error">{{ error }}</p>
-                            {% endfor %}
-                        </div>
+
+                    {% for error in form.non_field_errors %}
+                        <p class="form-error">{{ error }}</p>
                     {% endfor %}
-                    <button type="submit" class="button">
-                        {% if experience %}Simpan Perubahan{% else %}Tambah Experience{% endif %}
-                    </button>
-                    <a href="{% url 'main:show_experience' %}"
-                       class="button button-secondary">Batal</a>
+
+                    <div class="experience-editor__grid experience-editor__grid--top">
+                        <div class="experience-editor__field">
+                            <label for="{{ form.title.id_for_label }}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
+                                    <path d="m13.5 6.5 4 4"></path>
+                                </svg>
+                                {{ form.title.label }} <span class="experience-editor__required">*</span>
+                            </label>
+                            {{ form.title }}
+                            {% for error in form.title.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                        </div>
+
+                        <div class="experience-editor__field">
+                            <label for="{{ form.category.id_for_label }}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 6h7v7H4zM13 11h7v7h-7z"></path>
+                                    <path d="m15 4 3 3-3 3-3-3 3-3Z"></path>
+                                </svg>
+                                {{ form.category.label }}
+                            </label>
+                            {{ form.category }}
+                            {% for error in form.category.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="experience-editor__field">
+                        <label for="{{ form.description.id_for_label }}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 4h14v16H5z"></path>
+                                <path d="M8 8h8M8 12h8M8 16h5"></path>
+                            </svg>
+                            {{ form.description.label }}
+                        </label>
+                        {{ form.description }}
+                        {% for error in form.description.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="experience-editor__field">
+                        <label for="{{ form.thumbnail.id_for_label }}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path>
+                                <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path>
+                            </svg>
+                            Image / Logo URL
+                        </label>
+                        {{ form.thumbnail }}
+                        {% for error in form.thumbnail.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="experience-editor__grid experience-editor__grid--dates">
+                        <div class="experience-editor__field">
+                            <label for="{{ form.start_date.id_for_label }}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M5 5h14v15H5zM8 3v4M16 3v4M5 9h14"></path>
+                                </svg>
+                                {{ form.start_date.label }}
+                                <span class="experience-editor__required">*</span>
+                            </label>
+                            {{ form.start_date }}
+                            {% for error in form.start_date.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                        </div>
+
+                        <div class="experience-editor__field">
+                            <label for="{{ form.end_date.id_for_label }}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M5 5h14v15H5zM8 3v4M16 3v4M5 9h14"></path>
+                                </svg>
+                                {{ form.end_date.label }}
+                                <span class="experience-editor__optional">Leave blank if ongoing</span>
+                            </label>
+                            {{ form.end_date }}
+                            {% for error in form.end_date.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="experience-editor__actions">
+                        <a href="{% url 'main:show_experience' %}"
+                           class="button button-secondary">Cancel</a>
+                        <button type="submit" class="button">
+                            {% if experience %}Save{% else %}Add Experience{% endif %}
+                        </button>
+                    </div>
                 </form>
             </div>
         </section>

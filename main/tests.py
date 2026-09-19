@@ -149,7 +149,7 @@ class MainTest(TestCase):
             {
                 "title": "Updated Experience",
                 "description": self.experience.description,
-                "category": self.experience.category,
+                "category": "full-time",
                 "thumbnail": "",
                 "start_date": "2026-01-01",
                 "end_date": "",
@@ -159,6 +159,7 @@ class MainTest(TestCase):
         self.assertRedirects(response, reverse("main:show_experience"))
         self.experience.refresh_from_db()
         self.assertEqual(self.experience.title, "Updated Experience")
+        self.assertEqual(self.experience.category, "full-time")
 
     def test_delete_experience(self):
         response = self.client.post(
@@ -206,4 +207,4 @@ class MainTest(TestCase):
         Project.objects.all().delete()
         response = self.client.get(reverse("main:show_projects"))
 
-        self.assertContains(response, "Belum ada project yang ditambahkan.")
+        self.assertContains(response, "No projects have been added yet.")

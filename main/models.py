@@ -32,7 +32,12 @@ class Experience(models.Model):
 class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
+    subtitle = models.CharField(max_length=255, blank=True)
     description = models.TextField()
+    feature_one_title = models.CharField(max_length=255, blank=True)
+    feature_one_description = models.TextField(blank=True)
+    feature_two_title = models.CharField(max_length=255, blank=True)
+    feature_two_description = models.TextField(blank=True)
     technology_stack = models.CharField(max_length=255)
     project_url = models.URLField(blank=True, null=True)
     project_image_url = models.URLField(blank=True, null=True, max_length=500)
@@ -40,3 +45,7 @@ class Project(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def technology_items(self):
+        return [item.strip() for item in self.technology_stack.split(",") if item.strip()]

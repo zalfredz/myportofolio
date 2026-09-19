@@ -81,7 +81,7 @@ def create_experience(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Pengalaman baru berhasil ditambahkan!")
+        messages.success(request, "Experience added successfully!")
         return redirect("main:show_experience")
 
     context = {
@@ -98,7 +98,7 @@ def update_experience(request, experience_id):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Pengalaman berhasil diperbarui!")
+        messages.success(request, "Experience updated successfully!")
         return redirect("main:show_experience")
 
     context = {
@@ -114,13 +114,13 @@ def delete_experience(request, experience_id):
 
     if request.method == "POST":
         experience.delete()
-        messages.success(request, "Pengalaman berhasil dihapus!")
+        messages.success(request, "Experience deleted successfully!")
 
     return redirect("main:show_experience")
 
 
-def get_projects_json(request):
-    title_query = request.GET.get("title", "").strip()
+def get_projects_json(request, apply_filters=True):
+    title_query = request.GET.get("title", "").strip() if apply_filters else ""
     projects = Project.objects.all()
 
     if title_query:
@@ -131,18 +131,16 @@ def get_projects_json(request):
 
 
 def show_projects(request):
-    json_response = get_projects_json(request)
+    json_response = get_projects_json(request, apply_filters=False)
     projects = serializers.deserialize(
         "json",
         json_response.content.decode("utf-8"),
     )
     projects = [project.object for project in projects]
-    title_query = request.GET.get("title", "").strip()
 
     context = {
         "name": "Alfredo Harsono",
         "project_list": projects,
-        "title_query": title_query,
     }
     return render(request, "projects.html", context)
 
@@ -152,7 +150,7 @@ def create_project(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Proyek baru berhasil ditambahkan!")
+        messages.success(request, "Project added successfully!")
         return redirect("main:show_projects")
 
     context = {
@@ -169,7 +167,7 @@ def update_project(request, project_id):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Project berhasil diperbarui!")
+        messages.success(request, "Project updated successfully!")
         return redirect("main:show_projects")
 
     context = {
@@ -185,6 +183,6 @@ def delete_project(request, project_id):
 
     if request.method == "POST":
         project.delete()
-        messages.success(request, "Project berhasil dihapus!")
+        messages.success(request, "Project deleted successfully!")
 
     return redirect("main:show_projects")

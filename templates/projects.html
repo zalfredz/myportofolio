@@ -8,72 +8,142 @@
     <main>
         <section class="projects-section" id="projects">
             <div class="container">
-                <div class="project-header">
+                <div class="project-title-row">
                     <h1>Featured Works</h1>
                     <a href="{% url 'main:create_project' %}"
                        class="button project-add-button">
                         <span aria-hidden="true">+</span>
-                        Tambah Proyek
+                        Add Project
                     </a>
                 </div>
 
-                <form method="get"
-                      action="{% url 'main:show_projects' %}"
-                      class="project-search">
-                    <input type="search"
-                           name="title"
-                           value="{{ title_query }}"
-                           placeholder="Cari berdasarkan nama proyek"
-                           class="project-search__input"
-                           aria-label="Cari berdasarkan nama proyek">
-                    <button type="submit" class="button">Cari</button>
-                </form>
+                <div class="project-controls">
+                    <div class="project-control-tools">
+                        <label class="project-search-box" for="project-search">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="11" cy="11" r="6"></circle>
+                                <path d="m16 16 4 4"></path>
+                            </svg>
+                            <input type="search"
+                                   id="project-search"
+                                   placeholder="Search projects"
+                                   autocomplete="off">
+                        </label>
+                        <select id="project-sort" aria-label="Sort projects">
+                            <option value="newest">Newest</option>
+                            <option value="oldest">Oldest</option>
+                        </select>
+                    </div>
+                </div>
 
                 <div class="projects-grid">
                     {% for project in project_list %}
-                        <article class="project-card">
-                            <div class="project-media">
+                        <article class="project-showcase-card"
+                                 data-project-title="{{ project.title|lower }}"
+                                 data-project-description="{{ project.subtitle|lower }} {{ project.description|lower }} {{ project.feature_one_title|lower }} {{ project.feature_two_title|lower }}"
+                                 data-project-created="{{ project.created_at|date:'c' }}">
+                            <div class="project-showcase-media">
                                 {% if project.project_image_url %}
                                     <img src="{{ project.project_image_url }}"
-                                         alt="Gambar {{ project.title }}"
-                                         class="project-image">
-                                {% elif project.project_url %}
-                                    <a class="project-icon"
-                                       href="{{ project.project_url }}"
-                                       target="_blank"
-                                       rel="noreferrer"
-                                       aria-label="Open {{ project.title }} on GitHub">
-                                        <img src="/static/img/github.png" alt="">
-                                    </a>
+                                         alt="{{ project.title }} preview"
+                                         class="project-showcase-image">
                                 {% else %}
-                                    <div class="project-icon" aria-hidden="true">
+                                    <div class="project-showcase-placeholder">
                                         <img src="/static/img/github.png" alt="">
+                                        <span>{{ project.title }}</span>
                                     </div>
                                 {% endif %}
                             </div>
 
-                            <div class="project-content">
+                            <div class="project-showcase-content">
                                 <h2>{{ project.title }}</h2>
-                                <p class="project-stack">{{ project.technology_stack }}</p>
-                                <div class="project-description">{{ project.description }}</div>
-                                <div class="project-card-actions">
-                                    <div class="project-actions">
+                                {% if project.subtitle %}
+                                    <p class="project-showcase-subtitle">{{ project.subtitle }}</p>
+                                {% endif %}
+                                <div class="project-showcase-description">
+                                    {{ project.description|linebreaksbr }}
+                                </div>
+
+                                {% if project.feature_one_title or project.feature_two_title %}
+                                    <div class="project-feature-grid">
+                                        {% if project.feature_one_title %}
+                                            <div class="project-feature-card">
+                                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path>
+                                                    <circle cx="12" cy="12" r="4"></circle>
+                                                </svg>
+                                                <div>
+                                                    <h3>{{ project.feature_one_title }}</h3>
+                                                    <p>{{ project.feature_one_description }}</p>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        {% if project.feature_two_title %}
+                                            <div class="project-feature-card">
+                                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path d="M4 13h4l2-7 4 12 2-5h4"></path>
+                                                </svg>
+                                                <div>
+                                                    <h3>{{ project.feature_two_title }}</h3>
+                                                    <p>{{ project.feature_two_description }}</p>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                {% if project.technology_items %}
+                                    <div class="project-technology-list" aria-label="Technology stack">
+                                        {% for technology in project.technology_items %}
+                                            <span>{{ technology }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                <div class="project-showcase-footer">
+                                    {% if project.project_url %}
+                                        <a href="{{ project.project_url }}"
+                                           target="_blank"
+                                           rel="noreferrer"
+                                           class="project-source-link">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="m9 8-4 4 4 4M15 8l4 4-4 4"></path>
+                                            </svg>
+                                            Source Code
+                                        </a>
+                                    {% endif %}
+
+                                    <div class="project-showcase-actions">
                                         <a href="{% url 'main:update_project' project.id %}"
-                                           class="button button-secondary">Edit Project</a>
+                                           class="project-icon-action project-icon-action--edit"
+                                           aria-label="Edit {{ project.title }}"
+                                           title="Edit project">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
+                                                <path d="m13.5 6.5 4 4"></path>
+                                            </svg>
+                                        </a>
                                         {% include "components/project_delete_modal.html" with project=project %}
                                     </div>
                                 </div>
                             </div>
                         </article>
                     {% empty %}
-                        {% if title_query %}
-                            <p class="empty-state">Tidak ada proyek dengan nama tersebut.</p>
-                        {% else %}
-                            <p class="empty-state">Belum ada project yang ditambahkan.</p>
-                        {% endif %}
+                        <p class="empty-state">No projects have been added yet.</p>
                     {% endfor %}
+
+                    {% if project_list %}
+                        <div class="project-filter-empty" id="project-filter-empty" hidden>
+                            <h2>No matching projects</h2>
+                            <p>Try another filter.</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </section>
     </main>
 {% endblock content %}
+
+{% block extra_js %}
+    <script src="/static/js/project-filter.js?v=20260919-1"></script>
+{% endblock extra_js %}

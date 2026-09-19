@@ -16,28 +16,148 @@
                     <h1>Edit Project</h1>
                     <form method="post"
                           action="{% url 'main:update_project' project.id %}"
-                          class="project-form">
+                          class="experience-editor project-editor">
                 {% else %}
                     <h1>Add New Project</h1>
                     <form method="post"
                           action="{% url 'main:create_project' %}"
-                          class="project-form">
+                          class="experience-editor project-editor">
                 {% endif %}
                     {% csrf_token %}
-                    {% for field in form %}
-                        <div class="form-group">
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                            {% for error in field.errors %}
-                                <p class="form-error">{{ error }}</p>
-                            {% endfor %}
-                        </div>
+
+                    {% for error in form.non_field_errors %}
+                        <p class="form-error">{{ error }}</p>
                     {% endfor %}
-                    <button type="submit" class="button">
-                        {% if project %}Simpan Perubahan{% else %}Tambah Project{% endif %}
-                    </button>
-                    <a href="{% url 'main:show_projects' %}"
-                       class="button button-secondary">Batal</a>
+
+                    <div class="experience-editor__grid experience-editor__grid--top">
+                        <div class="experience-editor__field">
+                            <label for="{{ form.title.id_for_label }}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
+                                    <path d="m13.5 6.5 4 4"></path>
+                                </svg>
+                                {{ form.title.label }}
+                                <span class="experience-editor__required">*</span>
+                            </label>
+                            {{ form.title }}
+                            {% for error in form.title.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                        </div>
+
+                        <div class="experience-editor__field">
+                            <label for="{{ form.technology_stack.id_for_label }}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="m12 3 8 4-8 4-8-4 8-4Z"></path>
+                                    <path d="m4 12 8 4 8-4M4 17l8 4 8-4"></path>
+                                </svg>
+                                {{ form.technology_stack.label }}
+                                <span class="experience-editor__required">*</span>
+                            </label>
+                            {{ form.technology_stack }}
+                            {% for error in form.technology_stack.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="experience-editor__field">
+                        <label for="{{ form.subtitle.id_for_label }}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"></path>
+                            </svg>
+                            {{ form.subtitle.label }}
+                        </label>
+                        {{ form.subtitle }}
+                        {% for error in form.subtitle.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="experience-editor__field project-editor__description">
+                        <label for="{{ form.description.id_for_label }}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 4h14v16H5z"></path>
+                                <path d="M8 8h8M8 12h8M8 16h5"></path>
+                            </svg>
+                            {{ form.description.label }}
+                            <span class="experience-editor__required">*</span>
+                        </label>
+                        {{ form.description }}
+                        {% for error in form.description.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="project-editor__features">
+                        <div class="project-editor__feature">
+                            <div class="experience-editor__field">
+                                <label for="{{ form.feature_one_title.id_for_label }}">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="m12 3 2.2 4.8L19 10l-4.8 2.2L12 17l-2.2-4.8L5 10l4.8-2.2L12 3Z"></path>
+                                    </svg>
+                                    {{ form.feature_one_title.label }}
+                                </label>
+                                {{ form.feature_one_title }}
+                                {% for error in form.feature_one_title.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                            </div>
+                            <div class="experience-editor__field">
+                                <label for="{{ form.feature_one_description.id_for_label }}">
+                                    {{ form.feature_one_description.label }}
+                                </label>
+                                {{ form.feature_one_description }}
+                                {% for error in form.feature_one_description.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="project-editor__feature">
+                            <div class="experience-editor__field">
+                                <label for="{{ form.feature_two_title.id_for_label }}">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path>
+                                        <circle cx="12" cy="12" r="4"></circle>
+                                    </svg>
+                                    {{ form.feature_two_title.label }}
+                                </label>
+                                {{ form.feature_two_title }}
+                                {% for error in form.feature_two_title.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                            </div>
+                            <div class="experience-editor__field">
+                                <label for="{{ form.feature_two_description.id_for_label }}">
+                                    {{ form.feature_two_description.label }}
+                                </label>
+                                {{ form.feature_two_description }}
+                                {% for error in form.feature_two_description.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="experience-editor__grid experience-editor__grid--links">
+                        <div class="experience-editor__field">
+                            <label for="{{ form.project_url.id_for_label }}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path>
+                                    <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path>
+                                </svg>
+                                {{ form.project_url.label }}
+                            </label>
+                            {{ form.project_url }}
+                            {% for error in form.project_url.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                        </div>
+
+                        <div class="experience-editor__field">
+                            <label for="{{ form.project_image_url.id_for_label }}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 5h16v14H4z"></path>
+                                    <circle cx="9" cy="10" r="2"></circle>
+                                    <path d="m6 17 4-4 3 3 2-2 3 3"></path>
+                                </svg>
+                                {{ form.project_image_url.label }}
+                            </label>
+                            {{ form.project_image_url }}
+                            {% for error in form.project_image_url.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="experience-editor__actions">
+                        <a href="{% url 'main:show_projects' %}"
+                           class="button button-secondary">Cancel</a>
+                        <button type="submit" class="button">
+                            {% if project %}Save{% else %}Add Project{% endif %}
+                        </button>
+                    </div>
                 </form>
             </div>
         </section>
