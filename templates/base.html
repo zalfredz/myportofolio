@@ -7,18 +7,29 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260914-2">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260919-2">
     {% block meta %}{% endblock meta %}
 </head>
 <body id="top">
     <header class="site-header">
         <div class="container">
             <a href="{% url 'main:show_main' %}" class="brand">ALz</a>
-            <nav>
-                <a href="{% url 'main:show_main' %}">Profile</a>
-                <a href="{% url 'main:show_experience' %}">Experience</a>
-                <a href="{% url 'main:show_projects' %}">Projects</a>
+            <nav aria-label="Primary navigation">
+                <a href="{% url 'main:show_main' %}"
+                   class="{% if request.resolver_match.url_name == 'show_main' %}is-active{% endif %}">Profile</a>
+                <a href="{% url 'main:show_experience' %}"
+                   class="{% if '/experience/' in request.path %}is-active{% endif %}">Experience</a>
+                <a href="{% url 'main:show_projects' %}"
+                   class="{% if '/projects/' in request.path %}is-active{% endif %}">Projects</a>
             </nav>
+            <a href="{% static 'docs/Alfredo-Harsono-CV.pdf' %}"
+               class="header-cv"
+               download>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" />
+                </svg>
+                Download CV
+            </a>
         </div>
     </header>
 
