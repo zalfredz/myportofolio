@@ -65,3 +65,85 @@ Command tersebut membuat tabel `Project` di database. Kedua command juga diperlu
 Saya juga menggunakan bantuan AI (model KIMI) untuk membuat animasi gambar yang ketika dipencet bisa membuat pengguna direct ke website github pada page Projects saya. Penggunaan AI tersebut berfungsi sebagai alat bantu dalam proses pemahaman cara implementasinya.
 
 Bisa di cek melalui link berikut: https://www.kimi.ai/share/1a08fca3-4962-86db-8000-0000ea387eb2.
+
+
+### Tugas 3
+
+#### Deskripsi Proyek
+
+MyPortofolio adalah website portofolio pribadi berbasis Django yang menggunakan pola Model-View-Template (MVT). Website ini menyediakan halaman Profile, Experience, dan Projects. Data Experience dan Projects disimpan di database, dapat ditambahkan, diubah, atau dihapus melalui form, serta tersedia melalui endpoint JSON. Halaman Experience menyediakan filter kategori dan pengurutan data, sedangkan halaman Projects menyediakan pencarian dan pengurutan proyek.
+
+#### Instruksi Setup
+
+1. Clone repository dan masuk ke direktori proyek.
+
+   ```powershell
+   git clone https://github.com/zalfredz/myportofolio.git
+   cd myportofolio
+   ```
+
+2. Buat virtual environment.
+
+   ```powershell
+   python -m venv env
+   ```
+
+3. Aktifkan virtual environment di PowerShell.
+
+   ```powershell
+   .\env\Scripts\Activate.ps1
+   ```
+
+4. Instal seluruh dependency.
+
+   ```powershell
+   pip install -r requirements.txt
+   ```
+
+5. Terapkan migrasi database.
+
+   ```powershell
+   python manage.py migrate
+   ```
+
+6. Jalankan server lokal.
+
+   ```powershell
+   python manage.py runserver
+   ```
+
+   Website dapat dibuka melalui `http://127.0.0.1:8000/`.
+
+7. Jalankan unit test.
+
+   ```powershell
+   python manage.py test
+   ```
+
+---
+
+1. `ModelForm` digunakan karena Django dapat membuat form langsung dari model, termasuk field, validasi, dan penyimpanan data melalui `form.save()`. Hl ini mengurangi kode berulang dan menjaga form tetap sesuai dengan struktur database. `{% csrf_token %}` wajib ada pada form `POST` untuk melindungi aplikasi dari serangan CSRF (Cross-Site Request Forgery), yaitu keadaan ketika situs lain mencoba mengirim permintaan palsu menggunakan sesi pengguna. Django akan menolak request tanpa token yang valid.
+
+2. JSON lebih disukai karena formatnya lebih ringkas, mudah dibaca, dan ukurannya biasanya lebih kecil daripada XML. JSON juga mudah diproses langsung oleh JavaScript, sehingga cocok untuk komunikasi antara frontend dan backend melalui API.
+
+3. Saat pengguna membuka endpoint JSON, `urls.py` mengarahkan request ke view. View mengambil data dari model, misalnya `Project.objects.all()`, lalu mengubahnya menjadi JSON menggunakan `serializers.serialize()`. Setelah itu, data dikirim kembali melalui `HttpResponse` dengan `content_type="application/json"`. 
+
+Serialization diperlukan karena object model dan `QuerySet` Django adalah object Python yang tidak bisa langsung dibaca browser. Proses ini mengubahnya menjadi format JSON yang dapat dikirim dan diproses oleh aplikasi web.
+
+### AI Disclosure
+Saya juga menggunakan bantuan AI (model KIMI & Stitch) untuk membuat visual UI sebagai refrensi dan untuk melakukan debugging ketika terdapat hal yang tidak sesuai keinginan saya. Penggunaan AI tersebut berfungsi sebagai alat bantu dalam proses pemahaman cara implementasinya.
+
+bisa di cek melalui 2 link berikut
+https://stitch.withgoogle.com/projects/16341177562404616615
+https://www.kimi.ai/share/1a0bcaf1-8dc2-8d1e-8000-00008d33b972
+
+### Implementasi SARAN AI (KIMI & STITCH):
+
+STITCH
+Untuk Stitch saya menggunakannya hasil AI hanya untuk referensi redesign UI website saya. Beberapa hal yang tidak sesuai keinginan saya (terlalu padat, terlalu banyak kata-kata, tombol navigasi yang terlalu kompleks, dll) saya tiadakan dan tetap membuat design web dengan preferensi saya sendiri. Dapat dilihat melalui hasil stitch maupun di website asli saya.
+
+KIMI
+
+KIMI merekomendasikan penggunaan form dengan metode `GET` untuk filter `Experience`. Dengan pendekatan tersebut, filter aktif disimpan sebagai query parameter pada URL, misalnya `?category=volunteer&sort=newest`. Pendekatan ini bermanfaat karena hasil filter dapat dibookmark, dibagikan, dan diproses ulang oleh server, tetapi URL akan berubah setiap kali pengguna menerapkan filter.
+
+Implementasi saya berbeda karena filter kategori dan pengurutan Experience dijalankan menggunakan JavaScript di browser. Data `Experience` sudah dimuat pada halaman, kemudian JavaScript hanya menyembunyikan, menampilkan, dan mengurutkan kartu yang sesuai tanpa melakukan reload halaman atau mengubah URL. Karena itu, URL tetap bersih pada `/experience/` walaupun pengguna memilih kategori atau urutan tertentu. Cara ini dipilih agar interaksi terasa lebih cepat dan sesuai dengan desain halaman, tetapi pilihan filter tidak ikut tersimpan ketika halaman direfresh atau URL dibagikan.
