@@ -98,6 +98,17 @@ h1,
     box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.2);
 }
 
+.nav-user {
+    max-width: 8rem;
+    overflow: hidden;
+    padding: 0.5rem 0.7rem;
+    color: #93c5fd;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .header-cv {
     display: inline-flex;
     justify-self: end;
@@ -576,7 +587,7 @@ h1,
         grid-column: 1 / -1;
         grid-row: 2;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         width: 100%;
         gap: 0.2rem;
     }
@@ -584,6 +595,13 @@ h1,
     .site-header nav a {
         padding: 0.45rem 0.5rem;
         font-size: 0.8rem;
+        text-align: center;
+    }
+
+    .nav-user {
+        max-width: none;
+        padding: 0.45rem 0.25rem;
+        font-size: 0.75rem;
         text-align: center;
     }
 
@@ -1225,6 +1243,47 @@ h1,
     justify-content: flex-end;
     gap: 0.75rem;
     padding-top: 0.25rem;
+}
+
+.auth-page {
+    max-width: 38rem;
+}
+
+.auth-page > h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.auth-form {
+    margin-top: 1.25rem;
+}
+
+.form-help {
+    margin-top: 0.45rem;
+    color: var(--muted);
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.form-help ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1.15rem;
+}
+
+.auth-switch {
+    margin: 1rem 0 0;
+    color: var(--muted);
+}
+
+.auth-switch a {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    color: #93c5fd;
 }
 
 .timeline-actions {
@@ -1972,6 +2031,28 @@ h1,
 .project-icon-action--delete:hover {
     color: #fca5a5;
     background: rgba(239, 107, 107, 0.1);
+}
+
+.star-form {
+    display: inline;
+}
+
+.button-star {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--ink);
+}
+
+.button-star.is-starred {
+    background: var(--accent);
+}
+
+.star-count {
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    font-size: 0.8rem;
 }
 
 .project-filter-empty {

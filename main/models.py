@@ -1,4 +1,6 @@
 import uuid
+
+from django.contrib.auth.models import User
 from django.db import models
 
 class Experience(models.Model):
@@ -41,6 +43,9 @@ class Project(models.Model):
     technology_stack = models.CharField(max_length=255)
     project_url = models.URLField(blank=True, null=True)
     project_image_url = models.URLField(blank=True, null=True, max_length=500)
+    starred_by = models.ManyToManyField(
+        User, related_name="starred_projects", blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

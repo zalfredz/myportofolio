@@ -10,11 +10,13 @@
             <div class="container">
                 <div class="project-title-row">
                     <h1>Featured Works</h1>
+                    {% if user.is_superuser %}
                     <a href="{% url 'main:create_project' %}"
                        class="button project-add-button">
                         <span aria-hidden="true">+</span>
                         Add Project
                     </a>
+                    {% endif %}
                 </div>
 
                 <div class="project-controls">
@@ -114,6 +116,7 @@
                                     {% endif %}
 
                                     <div class="project-showcase-actions">
+                                        {% include "components/project_star.html" with project=project %}
                                         <a href="{% url 'main:update_project' project.id %}"
                                            class="project-icon-action project-icon-action--edit"
                                            aria-label="Edit {{ project.title }}"
@@ -123,7 +126,9 @@
                                                 <path d="m13.5 6.5 4 4"></path>
                                             </svg>
                                         </a>
-                                        {% include "components/project_delete_modal.html" with project=project %}
+                                        {% if user.is_superuser %}
+                                            {% include "components/project_delete_modal.html" with project=project %}
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
