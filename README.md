@@ -147,3 +147,6 @@ KIMI
 KIMI merekomendasikan penggunaan form dengan metode `GET` untuk filter `Experience`. Dengan pendekatan tersebut, filter aktif disimpan sebagai query parameter pada URL, misalnya `?category=volunteer&sort=newest`. Pendekatan ini bermanfaat karena hasil filter dapat dibookmark, dibagikan, dan diproses ulang oleh server, tetapi URL akan berubah setiap kali pengguna menerapkan filter.
 
 Implementasi saya berbeda karena filter kategori dan pengurutan Experience dijalankan menggunakan JavaScript di browser. Data `Experience` sudah dimuat pada halaman, kemudian JavaScript hanya menyembunyikan, menampilkan, dan mengurutkan kartu yang sesuai tanpa melakukan reload halaman atau mengubah URL. Karena itu, URL tetap bersih pada `/experience/` walaupun pengguna memilih kategori atau urutan tertentu. Cara ini dipilih agar interaksi terasa lebih cepat dan sesuai dengan desain halaman, tetapi pilihan filter tidak ikut tersimpan ketika halaman direfresh atau URL dibagikan.
+
+
+### Tugas 4

@@ -13,6 +13,7 @@ from main.views import (
     show_experience,
     show_main,
     show_projects,
+    toggle_experience_star,
     toggle_star,
     update_experience,
     update_project,
@@ -27,6 +28,11 @@ urlpatterns = [
     path("logout/", logout_user, name="logout"),
     path("experience/", show_experience, name="show_experience"),
     path("experience/add/", create_experience, name="create_experience"),
+    path(
+        "experience/<uuid:experience_id>/star/",
+        toggle_experience_star,
+        name="toggle_experience_star",
+    ),
     path(
         "experience/<uuid:experience_id>/edit/",
         update_experience,

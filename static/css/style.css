@@ -1325,6 +1325,25 @@ h1,
     color: #bfdbfe;
 }
 
+.experience-star-form {
+    display: inline;
+}
+
+.experience-action--star.is-starred {
+    color: #93c5fd;
+}
+
+.experience-star-count {
+    min-width: 1.35rem;
+    padding: 0.05rem 0.35rem;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+}
+
 .experience-action--delete {
     color: #ef6b6b;
 }

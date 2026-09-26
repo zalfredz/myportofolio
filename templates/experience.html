@@ -12,11 +12,13 @@
                     <div class="experience-overview__copy">
                         <div class="experience-title-row">
                             <h1>Things I&rsquo;ve been through</h1>
+                            {% if user.is_superuser %}
                             <a href="{% url 'main:create_experience' %}"
                                class="button project-add-button">
                                 <span aria-hidden="true">+</span>
                                 Add Experience
                             </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -74,6 +76,8 @@
                                     {{ experience.description }}
                                 </div>
                                 <div class="timeline-actions">
+                                    {% include "components/experience_star.html" with experience=experience %}
+                                    {% if user.is_superuser or is_editor %}
                                     <a href="{% url 'main:update_experience' experience.id %}"
                                        class="experience-action experience-action--edit">
                                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -82,7 +86,10 @@
                                         </svg>
                                         <span>Edit Experience</span>
                                     </a>
+                                    {% endif %}
+                                    {% if user.is_superuser %}
                                     {% include "components/experience_delete_modal.html" with experience=experience %}
+                                    {% endif %}
                                 </div>
                             </div>
                         </details>

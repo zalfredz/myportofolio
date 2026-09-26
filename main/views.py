@@ -14,6 +14,20 @@ from main.forms import ExperienceForm, ProjectForm
 from main.models import Experience, Project
 
 
+EDITOR_GROUP_NAME = "Editor"
+
+
+def is_editor(user):
+    return (
+        user.is_authenticated
+        and user.groups.filter(name=EDITOR_GROUP_NAME).exists()
+    )
+
+
+def can_edit_experience(user):
+    return user.is_superuser or is_editor(user)
+
+
 def show_main(request):
     last_login = request.COOKIES.get("last_login", "Not available")
     context = {
@@ -97,6 +111,7 @@ def show_experience(request):
         "experience_list": experiences,
         "total_roles": all_experiences.count(),
         "category_filters": category_filters,
+        "is_editor": is_editor(request.user),
     }
     return render(request, "experience.html", context)
 
@@ -121,11 +136,17 @@ def get_experiences_json(request, apply_filters=True):
     else:
         experiences = experiences.order_by("-start_date")
 
-    experiences_json = serializers.serialize("json", experiences)
+    experiences_json = serializers.serialize(
+        "json", experiences, use_natural_foreign_keys=True
+    )
     return HttpResponse(experiences_json, content_type="application/json")
 
 
+@login_required(login_url="/login/")
 def create_experience(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = ExperienceForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -141,7 +162,11 @@ def create_experience(request):
     return render(request, "experience_form.html", context)
 
 
+@login_required(login_url="/login/")
 def update_experience(request, experience_id):
+    if not can_edit_experience(request.user):
+        raise PermissionDenied
+
     experience = get_object_or_404(Experience, pk=experience_id)
     form = ExperienceForm(request.POST or None, instance=experience)
 
@@ -158,12 +183,29 @@ def update_experience(request, experience_id):
     return render(request, "experience_form.html", context)
 
 
+@login_required(login_url="/login/")
 def delete_experience(request, experience_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     experience = get_object_or_404(Experience, pk=experience_id)
 
     if request.method == "POST":
         experience.delete()
         messages.success(request, "Experience deleted successfully!")
+
+    return redirect("main:show_experience")
+
+
+@login_required(login_url="/login/")
+def toggle_experience_star(request, experience_id):
+    experience = get_object_or_404(Experience, pk=experience_id)
+
+    if request.method == "POST":
+        if request.user in experience.starred_by.all():
+            experience.starred_by.remove(request.user)
+        else:
+            experience.starred_by.add(request.user)
 
     return redirect("main:show_experience")
 
