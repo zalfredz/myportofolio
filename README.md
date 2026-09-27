@@ -152,3 +152,6 @@ Implementasi saya berbeda karena filter kategori dan pengurutan Experience dijal
 ### Tugas 4
 
 Tidak apa pertanyaan reflektif untuk tugas kali ini
+
+### AI Disclosure
+Saya tidak menggunakan bantuan AI dalam pengerjaan tugas kali ini. Segala pembuatan, penyesuaian, dan integrasi dengan bagian website lainnya saya kerjakan dan sesuaikan sendiri.

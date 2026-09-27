@@ -21,6 +21,8 @@
                    class="{% if '/experience/' in request.path %}is-active{% endif %}">Experience</a>
                 <a href="{% url 'main:show_projects' %}"
                    class="{% if '/projects/' in request.path %}is-active{% endif %}">Projects</a>
+            </nav>
+            <div class="header-actions">
                 {% if user.is_authenticated %}
                     <span class="nav-user" title="Signed in as {{ user.username }}">{{ user.username }}</span>
                     <a href="{% url 'main:logout' %}">Logout</a>
@@ -30,15 +32,7 @@
                     <a href="{% url 'main:register' %}"
                        class="{% if request.resolver_match.url_name == 'register' %}is-active{% endif %}">Register</a>
                 {% endif %}
-            </nav>
-            <a href="{% static 'docs/Alfredo-Harsono-CV.pdf' %}"
-               class="header-cv"
-               download>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" />
-                </svg>
-                Check My CV
-            </a>
+            </div>
         </div>
     </header>
 

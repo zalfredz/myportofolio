@@ -98,6 +98,40 @@ h1,
     box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.2);
 }
 
+.header-actions {
+    display: inline-flex;
+    justify-self: end;
+    margin-left: auto;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.3rem;
+    background-color: #0d121f;
+    border: 1px solid #151c2c;
+    border-radius: 0.75rem;
+}
+
+.header-actions a {
+    padding: 0.5rem 0.9rem;
+    color: var(--muted);
+    border: 1px solid transparent;
+    border-radius: 0.55rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.header-actions a:hover {
+    color: var(--text);
+}
+
+.header-actions a.is-active {
+    color: var(--text);
+    background-color: var(--surface);
+    border-color: #30384c;
+    box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.2);
+}
+
 .nav-user {
     max-width: 8rem;
     overflow: hidden;
@@ -587,7 +621,7 @@ h1,
         grid-column: 1 / -1;
         grid-row: 2;
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         width: 100%;
         gap: 0.2rem;
     }
@@ -608,6 +642,11 @@ h1,
     .header-cv {
         padding: 0.5rem 0.7rem;
         font-size: 0.75rem;
+    }
+
+    .header-actions a {
+        padding: 0.45rem 0.65rem;
+        font-size: 0.8rem;
     }
 
     /* Profile */
