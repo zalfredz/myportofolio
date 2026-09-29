@@ -281,11 +281,104 @@ class MainTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "projects.html")
 
-    def test_projects_page_shows_project(self):
+    def test_projects_page_provides_ajax_container(self):
         response = self.client.get(reverse("main:show_projects"))
 
-        self.assertContains(response, self.project.title)
-        self.assertContains(response, self.project.description)
+        self.assertContains(response, 'id="projects-grid"')
+        self.assertContains(response, reverse("main:get_projects_json"))
+        self.assertNotContains(response, 'id="add-project-modal"')
+        self.assertNotContains(response, self.project.title)
+
+    def test_superuser_sees_add_project_modal(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("main:show_projects"))
+
+        self.assertContains(response, 'popovertarget="add-project-modal"')
+        self.assertContains(response, 'id="add-project-modal"')
+        self.assertContains(response, 'id="project-form"')
+        self.assertContains(response, 'action="{}"'.format(reverse("main:create_project")))
+        self.assertContains(
+            response,
+            'data-ajax-url="{}"'.format(reverse("main:create_project_ajax")),
+        )
+
+    def test_superuser_can_create_project_with_ajax(self):
+        self.client.force_login(self.superuser)
+        response = self.client.post(
+            reverse("main:create_project_ajax"),
+            {
+                "title": "AJAX Portfolio",
+                "description": "Created without a page reload.",
+                "technology_stack": "Django, JavaScript",
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(Project.objects.filter(title="AJAX Portfolio").exists())
+
+    def test_ajax_create_project_rejects_non_superuser(self):
+        self.client.force_login(self.regular_user)
+        response = self.client.post(
+            reverse("main:create_project_ajax"),
+            {
+                "title": "Unauthorized Project",
+                "description": "Should not be saved.",
+                "technology_stack": "Django",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Project.objects.filter(title="Unauthorized Project").exists())
+
+    def test_ajax_create_project_returns_validation_errors(self):
+        self.client.force_login(self.superuser)
+        response = self.client.post(
+            reverse("main:create_project_ajax"),
+            {
+                "title": "<img src=x>",
+                "description": "Safe description.",
+                "technology_stack": "Django",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("title", response.json()["errors"])
+
+    def test_ajax_create_project_only_accepts_post(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("main:create_project_ajax"))
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_projects_json_contains_ajax_fields(self):
+        self.project.starred_by.add(self.regular_user)
+        self.client.force_login(self.regular_user)
+        response = self.client.get(reverse("main:get_projects_json"))
+
+        self.assertEqual(response.status_code, 200)
+        project = response.json()[0]
+        self.assertEqual(project["pk"], str(self.project.id))
+        self.assertEqual(project["fields"]["title"], self.project.title)
+        self.assertEqual(project["fields"]["technology_items"], ["Django", "Python"])
+        self.assertEqual(project["fields"]["star_count"], 1)
+        self.assertTrue(project["fields"]["is_starred"])
+        self.assertEqual(project["fields"]["starred_by_names"], ["reader"])
+
+    def test_projects_json_search(self):
+        Project.objects.create(
+            title="YouWell",
+            description="A wellness companion.",
+            technology_stack="Flutter, Dart",
+        )
+        response = self.client.get(
+            reverse("main:get_projects_json"),
+            {"title": "Focus"},
+        )
+
+        self.assertEqual(
+            [project["fields"]["title"] for project in response.json()],
+            ["FocusBuddy"],
+        )
 
     def test_update_project(self):
         response = self.client.post(
@@ -306,8 +399,8 @@ class MainTest(TestCase):
         self.project.refresh_from_db()
         self.assertEqual(self.project.title, "FocusBuddy Updated")
 
-    def test_empty_projects_page(self):
+    def test_empty_projects_api(self):
         Project.objects.all().delete()
-        response = self.client.get(reverse("main:show_projects"))
+        response = self.client.get(reverse("main:get_projects_json"))
 
-        self.assertContains(response, "No projects have been added yet.")
+        self.assertEqual(response.json(), [])

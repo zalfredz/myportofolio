@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block meta %}
     <title>Projects - {{ name }}</title>
@@ -11,15 +12,22 @@
                 <div class="project-title-row">
                     <h1>Featured Works</h1>
                     {% if user.is_superuser %}
-                    <a href="{% url 'main:create_project' %}"
-                       class="button project-add-button">
-                        <span aria-hidden="true">+</span>
-                        Add Project
-                    </a>
+                        <button type="button"
+                                class="button project-add-button"
+                                popovertarget="add-project-modal">
+                            <span aria-hidden="true">+</span>
+                            Add Project
+                        </button>
                     {% endif %}
                 </div>
 
-                <div class="project-controls">
+                <button type="button"
+                        class="button button-secondary toast-test-button"
+                        onclick="showToast('System Notification', 'Toast is working correctly!', 'success')">
+                    Test Toast
+                </button>
+
+                <form id="project-search-form" class="project-controls">
                     <div class="project-control-tools">
                         <label class="project-search-box" for="project-search">
                             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -28,6 +36,8 @@
                             </svg>
                             <input type="search"
                                    id="project-search"
+                                   name="title"
+                                   value="{{ title_query }}"
                                    placeholder="Search projects"
                                    autocomplete="off">
                         </label>
@@ -36,119 +46,36 @@
                             <option value="oldest">Oldest</option>
                         </select>
                     </div>
+                </form>
+
+                <div id="project-loading" class="project-filter-empty">
+                    <p>Loading projects...</p>
                 </div>
-
-                <div class="projects-grid">
-                    {% for project in project_list %}
-                        <article class="project-showcase-card"
-                                 data-project-title="{{ project.title|lower }}"
-                                 data-project-description="{{ project.subtitle|lower }} {{ project.description|lower }} {{ project.feature_one_title|lower }} {{ project.feature_two_title|lower }}"
-                                 data-project-created="{{ project.created_at|date:'c' }}">
-                            <div class="project-showcase-media">
-                                {% if project.project_image_url %}
-                                    <img src="{{ project.project_image_url }}"
-                                         alt="{{ project.title }} preview"
-                                         class="project-showcase-image">
-                                {% else %}
-                                    <div class="project-showcase-placeholder">
-                                        <img src="/static/img/github.png" alt="">
-                                        <span>{{ project.title }}</span>
-                                    </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="project-showcase-content">
-                                <h2>{{ project.title }}</h2>
-                                {% if project.subtitle %}
-                                    <p class="project-showcase-subtitle">{{ project.subtitle }}</p>
-                                {% endif %}
-                                <div class="project-showcase-description">
-                                    {{ project.description|linebreaksbr }}
-                                </div>
-
-                                {% if project.feature_one_title or project.feature_two_title %}
-                                    <div class="project-feature-grid">
-                                        {% if project.feature_one_title %}
-                                            <div class="project-feature-card">
-                                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path>
-                                                    <circle cx="12" cy="12" r="4"></circle>
-                                                </svg>
-                                                <div>
-                                                    <h3>{{ project.feature_one_title }}</h3>
-                                                    <p>{{ project.feature_one_description }}</p>
-                                                </div>
-                                            </div>
-                                        {% endif %}
-                                        {% if project.feature_two_title %}
-                                            <div class="project-feature-card">
-                                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path d="M4 13h4l2-7 4 12 2-5h4"></path>
-                                                </svg>
-                                                <div>
-                                                    <h3>{{ project.feature_two_title }}</h3>
-                                                    <p>{{ project.feature_two_description }}</p>
-                                                </div>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-
-                                {% if project.technology_items %}
-                                    <div class="project-technology-list" aria-label="Technology stack">
-                                        {% for technology in project.technology_items %}
-                                            <span>{{ technology }}</span>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-
-                                <div class="project-showcase-footer">
-                                    {% if project.project_url %}
-                                        <a href="{{ project.project_url }}"
-                                           target="_blank"
-                                           rel="noreferrer"
-                                           class="project-source-link">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                <path d="m9 8-4 4 4 4M15 8l4 4-4 4"></path>
-                                            </svg>
-                                            Source Code
-                                        </a>
-                                    {% endif %}
-
-                                    <div class="project-showcase-actions">
-                                        {% include "components/project_star.html" with project=project %}
-                                        <a href="{% url 'main:update_project' project.id %}"
-                                           class="project-icon-action project-icon-action--edit"
-                                           aria-label="Edit {{ project.title }}"
-                                           title="Edit project">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                <path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
-                                                <path d="m13.5 6.5 4 4"></path>
-                                            </svg>
-                                        </a>
-                                        {% if user.is_superuser %}
-                                            {% include "components/project_delete_modal.html" with project=project %}
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
-                    {% empty %}
-                        <p class="empty-state">No projects have been added yet.</p>
-                    {% endfor %}
-
-                    {% if project_list %}
-                        <div class="project-filter-empty" id="project-filter-empty" hidden>
-                            <h2>No matching projects</h2>
-                            <p>Try another filter.</p>
-                        </div>
-                    {% endif %}
+                <div id="project-error" class="project-filter-empty hide" role="alert">
+                    <h2>Unable to load projects</h2>
+                    <p>Please try again.</p>
                 </div>
+                <div id="project-empty" class="project-filter-empty hide">
+                    <h2>No matching projects</h2>
+                    <p>Try another search.</p>
+                </div>
+                <div id="projects-grid"
+                     class="projects-grid hide"
+                     data-projects-endpoint="{% url 'main:get_projects_json' %}"
+                     data-star-url="{% url 'main:toggle_star' '00000000-0000-0000-0000-000000000000' %}"
+                     data-edit-url="{% url 'main:update_project' '00000000-0000-0000-0000-000000000000' %}"
+                     data-delete-url="{% url 'main:delete_project' '00000000-0000-0000-0000-000000000000' %}"
+                     data-csrf-token="{{ csrf_token }}"
+                     data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"></div>
             </div>
         </section>
     </main>
+
+    {% if user.is_superuser %}
+        {% include "components/project_form_modal.html" %}
+    {% endif %}
 {% endblock content %}
 
 {% block extra_js %}
-    <script src="/static/js/project-filter.js?v=20260919-1"></script>
+    <script src="{% static 'js/project-filter.js' %}?v=20260929-1"></script>
 {% endblock extra_js %}

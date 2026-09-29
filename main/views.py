@@ -7,8 +7,9 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import PermissionDenied
 from django.core import serializers
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from main.forms import ExperienceForm, ProjectForm
 from main.models import Experience, Project
@@ -210,30 +211,57 @@ def toggle_experience_star(request, experience_id):
     return redirect("main:show_experience")
 
 
-def get_projects_json(request, apply_filters=True):
-    title_query = request.GET.get("title", "").strip() if apply_filters else ""
-    projects = Project.objects.all()
+def get_projects_json(request):
+    search_query = request.GET.get("title", "").strip()
+    projects = Project.objects.prefetch_related("starred_by").all()
 
-    if title_query:
-        projects = projects.filter(title__icontains=title_query)
+    if search_query:
+        projects = projects.filter(
+            Q(title__icontains=search_query)
+            | Q(subtitle__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(feature_one_title__icontains=search_query)
+            | Q(feature_two_title__icontains=search_query)
+            | Q(technology_stack__icontains=search_query)
+        )
 
-    projects_json = serializers.serialize(
-        "json", projects, use_natural_foreign_keys=True
-    )
-    return HttpResponse(projects_json, content_type="application/json")
+    data = []
+    for project in projects:
+        starred_users = list(project.starred_by.all())
+        data.append(
+            {
+                "pk": str(project.id),
+                "fields": {
+                    "title": project.title,
+                    "subtitle": project.subtitle,
+                    "description": project.description,
+                    "feature_one_title": project.feature_one_title,
+                    "feature_one_description": project.feature_one_description,
+                    "feature_two_title": project.feature_two_title,
+                    "feature_two_description": project.feature_two_description,
+                    "technology_stack": project.technology_stack,
+                    "technology_items": project.technology_items,
+                    "project_url": project.project_url,
+                    "project_image_url": project.project_image_url,
+                    "created_at": project.created_at.isoformat(),
+                    "star_count": len(starred_users),
+                    "is_starred": (
+                        request.user.is_authenticated
+                        and any(user.pk == request.user.pk for user in starred_users)
+                    ),
+                    "starred_by_names": [user.username for user in starred_users],
+                },
+            }
+        )
+
+    return JsonResponse(data, safe=False)
 
 
 def show_projects(request):
-    json_response = get_projects_json(request, apply_filters=False)
-    projects = serializers.deserialize(
-        "json",
-        json_response.content.decode("utf-8"),
-    )
-    projects = [project.object for project in projects]
-
     context = {
         "name": "Alfredo Harsono",
-        "project_list": projects,
+        "title_query": request.GET.get("title", "").strip(),
+        "form": ProjectForm(),
     }
     return render(request, "projects.html", context)
 
@@ -256,6 +284,25 @@ def create_project(request):
         "project": None,
     }
     return render(request, "projects_form.html", context)
+
+
+@require_POST
+def create_project_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Only the portfolio owner can add projects."},
+            status=403,
+        )
+
+    form = ProjectForm(request.POST)
+    if form.is_valid():
+        project = form.save()
+        return JsonResponse(
+            {"message": "Project added successfully.", "pk": str(project.id)},
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 
 def update_project(request, project_id):
