@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block meta %}
     <title>Experience - {{ name }}</title>
@@ -39,7 +40,17 @@
                         {% endfor %}
                     </div>
 
-                    <div class="experience-sort-control">
+                    <div class="experience-control-tools">
+                        <label class="experience-search" for="experience-search">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="11" cy="11" r="6"></circle>
+                                <path d="m16 16 4 4"></path>
+                            </svg>
+                            <input type="search"
+                                   id="experience-search"
+                                   placeholder="Search experiences"
+                                   autocomplete="off">
+                        </label>
                         <label class="experience-sort">
                             <select name="sort" id="experience-sort" aria-label="Sort experience">
                                 <option value="newest">Newest</option>
@@ -49,69 +60,34 @@
                     </div>
                 </div>
 
-                <div class="experience-timeline">
-                    {% for experience in experience_list %}
-                        <details class="timeline-item"
-                                 data-category="{{ experience.category }}"
-                                 data-start="{{ experience.start_date|date:'Y-m-d' }}">
-                            <summary class="timeline-summary">
-                                <div class="timeline-badges">
-                                    <span class="timeline-category">{{ experience.get_category_display }}</span>
-                                    <span class="timeline-status {% if experience.is_ongoing %}is-current{% endif %}">
-                                        {% if experience.is_ongoing %}Current{% else %}Completed{% endif %}
-                                    </span>
-                                </div>
-                                <span class="timeline-title">{{ experience.title }}</span>
-                                <span class="timeline-period">
-                                    {{ experience.start_date|date:"M Y" }} &ndash;
-                                    {% if experience.is_ongoing %}
-                                        Present
-                                    {% else %}
-                                        {{ experience.end_date|date:"M Y" }}
-                                    {% endif %}
-                                </span>
-                            </summary>
-                            <div class="timeline-content">
-                                <div class="timeline-description">
-                                    {{ experience.description }}
-                                </div>
-                                <div class="timeline-actions">
-                                    {% include "components/experience_star.html" with experience=experience %}
-                                    {% if user.is_superuser or is_editor %}
-                                    <a href="{% url 'main:update_experience' experience.id %}"
-                                       class="experience-action experience-action--edit">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                            <path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
-                                            <path d="m13.5 6.5 4 4"></path>
-                                        </svg>
-                                        <span>Edit Experience</span>
-                                    </a>
-                                    {% endif %}
-                                    {% if user.is_superuser %}
-                                    {% include "components/experience_delete_modal.html" with experience=experience %}
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </details>
-                    {% empty %}
-                        <div class="experience-empty">
-                            <h2>No experience yet</h2>
-                            <p>Add your first experience to begin the timeline.</p>
-                        </div>
-                    {% endfor %}
-                    {% if experience_list %}
-                        <div class="experience-empty" id="experience-filter-empty" hidden>
-                            <h2>No matching experience</h2>
-                            <p>Try another category.</p>
-                        </div>
-                    {% endif %}
+                <div id="experience-loading" class="experience-empty">
+                    <p>Loading experiences...</p>
                 </div>
+                <div id="experience-error" class="experience-empty hide" role="alert">
+                    <h2>Unable to load experiences</h2>
+                    <p>Please try again.</p>
+                </div>
+                <div id="experience-empty" class="experience-empty hide">
+                    <h2>No matching experience</h2>
+                    <p>Try another search or category.</p>
+                </div>
+                <div id="experience-timeline"
+                     class="experience-timeline hide"
+                     data-experiences-endpoint="{% url 'main:get_experiences_json' %}"
+                     data-star-url="{% url 'main:toggle_experience_star' '00000000-0000-0000-0000-000000000000' %}"
+                     data-edit-url="{% url 'main:update_experience' '00000000-0000-0000-0000-000000000000' %}"
+                     data-delete-url="{% url 'main:delete_experience' '00000000-0000-0000-0000-000000000000' %}"
+                     data-login-url="{% url 'main:login' %}"
+                     data-csrf-token="{{ csrf_token }}"
+                     data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
+                     data-can-edit="{% if user.is_superuser or is_editor %}true{% else %}false{% endif %}"
+                     data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"></div>
             </div>
         </section>
     </main>
 {% endblock content %}
 
 {% block extra_js %}
-    <script src="/static/js/experience-accordion.js?v=20260909-1"></script>
-    <script src="/static/js/experience-filter.js?v=20260919-2"></script>
+    <script src="{% static 'js/experience-accordion.js' %}?v=20260929-1"></script>
+    <script src="{% static 'js/experience-filter.js' %}?v=20260929-1"></script>
 {% endblock extra_js %}

@@ -1,15 +1,19 @@
-document.querySelectorAll(".timeline-item").forEach((item) => {
-    const summary = item.querySelector(".timeline-summary");
+"use strict";
 
-    summary.addEventListener("click", (event) => {
+const accordionTimeline = document.getElementById("experience-timeline");
+
+if (accordionTimeline) {
+    accordionTimeline.addEventListener("click", (event) => {
+        const summary = event.target.closest(".timeline-summary");
+        if (!summary || !accordionTimeline.contains(summary)) return;
+
+        const item = summary.closest(".timeline-item");
         if (item.classList.contains("is-closing")) {
             event.preventDefault();
             return;
         }
 
-        if (!item.open) {
-            return;
-        }
+        if (!item.open) return;
 
         event.preventDefault();
         item.classList.add("is-closing");
@@ -19,4 +23,4 @@ document.querySelectorAll(".timeline-item").forEach((item) => {
             item.classList.remove("is-closing");
         }, 250);
     });
-});
+}

@@ -5,9 +5,8 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import PermissionDenied
-from django.core import serializers
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -85,13 +84,6 @@ def logout_user(request):
 
 
 def show_experience(request):
-    json_response = get_experiences_json(request, apply_filters=False)
-    experiences = serializers.deserialize(
-        "json",
-        json_response.content.decode("utf-8"),
-    )
-    experiences = [experience.object for experience in experiences]
-
     all_experiences = Experience.objects.all()
     category_options = [
         ("full-time", "Full-Time"),
@@ -109,7 +101,6 @@ def show_experience(request):
 
     context = {
         "name": "Alfredo Harsono",
-        "experience_list": experiences,
         "total_roles": all_experiences.count(),
         "category_filters": category_filters,
         "is_editor": is_editor(request.user),
@@ -117,11 +108,11 @@ def show_experience(request):
     return render(request, "experience.html", context)
 
 
-def get_experiences_json(request, apply_filters=True):
-    experiences = Experience.objects.all()
-    search_query = request.GET.get("q", "").strip() if apply_filters else ""
-    category = request.GET.get("category", "").strip() if apply_filters else ""
-    sort_order = request.GET.get("sort", "newest").strip() if apply_filters else "newest"
+def get_experiences_json(request):
+    experiences = Experience.objects.prefetch_related("starred_by").all()
+    search_query = request.GET.get("q", "").strip()
+    category = request.GET.get("category", "").strip()
+    sort_order = request.GET.get("sort", "newest").strip()
 
     allowed_categories = {choice[0] for choice in Experience.EXPERIENCE_CHOICES}
     if category in allowed_categories:
@@ -137,10 +128,40 @@ def get_experiences_json(request, apply_filters=True):
     else:
         experiences = experiences.order_by("-start_date")
 
-    experiences_json = serializers.serialize(
-        "json", experiences, use_natural_foreign_keys=True
-    )
-    return HttpResponse(experiences_json, content_type="application/json")
+    data = []
+    for experience in experiences:
+        starred_users = list(experience.starred_by.all())
+        data.append(
+            {
+                "pk": str(experience.id),
+                "fields": {
+                    "title": experience.title,
+                    "description": experience.description,
+                    "category": experience.category,
+                    "category_display": experience.get_category_display(),
+                    "thumbnail": experience.thumbnail,
+                    "start_date": (
+                        experience.start_date.isoformat()
+                        if experience.start_date
+                        else None
+                    ),
+                    "end_date": (
+                        experience.end_date.isoformat()
+                        if experience.end_date
+                        else None
+                    ),
+                    "is_ongoing": experience.is_ongoing,
+                    "star_count": len(starred_users),
+                    "is_starred": (
+                        request.user.is_authenticated
+                        and any(user.pk == request.user.pk for user in starred_users)
+                    ),
+                    "starred_by_names": [user.username for user in starred_users],
+                },
+            }
+        )
+
+    return JsonResponse(data, safe=False)
 
 
 @login_required(login_url="/login/")

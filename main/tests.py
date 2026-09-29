@@ -52,17 +52,20 @@ class MainTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experience.html")
         self.assertTemplateUsed(response, "base.html")
-        self.assertContains(response, self.experience.title)
-        self.assertContains(response, self.experience.description)
-        self.assertContains(response, "Jan 2026")
-        self.assertContains(response, "Present")
+        self.assertContains(response, 'id="experience-timeline"')
+        self.assertContains(response, reverse("main:get_experiences_json"))
+        self.assertContains(response, 'id="experience-loading"')
+        self.assertContains(response, 'id="experience-error"')
+        self.assertContains(response, 'id="experience-empty"')
+        self.assertNotContains(response, self.experience.title)
+        self.assertNotContains(response, self.experience.description)
         self.assertContains(response, f'href="{reverse("main:show_main")}"')
 
     def test_empty_experience_page(self):
         Experience.objects.all().delete()
         response = self.client.get(reverse("main:show_experience"))
 
-        self.assertContains(response, "No experience yet")
+        self.assertContains(response, "No matching experience")
 
     def test_experience_search(self):
         Experience.objects.create(
@@ -117,18 +120,23 @@ class MainTest(TestCase):
     def test_completed_experience(self):
         self.experience.end_date = date(2026, 2, 1)
         self.experience.save()
-        response = self.client.get(reverse("main:show_experience"))
+        response = self.client.get(reverse("main:get_experiences_json"))
 
         self.assertFalse(self.experience.is_ongoing)
-        self.assertContains(response, "Feb 2026")
-        self.assertNotContains(response, "Present")
+        self.assertEqual(response.json()[0]["fields"]["end_date"], "2026-02-01")
+        self.assertFalse(response.json()[0]["fields"]["is_ongoing"])
 
     def test_experiences_json(self):
         response = self.client.get(reverse("main:get_experiences_json"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/json")
-        self.assertEqual(response.json()[0]["fields"]["title"], self.experience.title)
+        experience = response.json()[0]
+        self.assertEqual(experience["pk"], str(self.experience.id))
+        self.assertEqual(experience["fields"]["title"], self.experience.title)
+        self.assertEqual(experience["fields"]["category_display"], "Part-Time")
+        self.assertEqual(experience["fields"]["star_count"], 0)
+        self.assertFalse(experience["fields"]["is_starred"])
 
     def test_create_experience(self):
         response = self.client.get(reverse("main:create_experience"))
@@ -271,9 +279,13 @@ class MainTest(TestCase):
 
     def test_experiences_json_uses_usernames_for_stars(self):
         self.experience.starred_by.add(self.regular_user)
+        self.client.force_login(self.regular_user)
         response = self.client.get(reverse("main:get_experiences_json"))
 
-        self.assertEqual(response.json()[0]["fields"]["starred_by"], [["reader"]])
+        fields = response.json()[0]["fields"]
+        self.assertEqual(fields["star_count"], 1)
+        self.assertTrue(fields["is_starred"])
+        self.assertEqual(fields["starred_by_names"], ["reader"])
 
     def test_projects_url_is_accessible(self):
         response = self.client.get(reverse("main:show_projects"))
