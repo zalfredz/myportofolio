@@ -1723,6 +1723,17 @@ h1,
     margin-top: 0;
 }
 
+.experience-form-modal__content {
+    width: min(100%, 800px);
+}
+
+.experience-form-modal .experience-editor--modal {
+    margin-top: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
 .project-form-modal .form-group input,
 .project-form-modal .form-group textarea,
 .project-form-modal .form-group select {

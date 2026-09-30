@@ -14,11 +14,12 @@
                         <div class="experience-title-row">
                             <h1>Things I&rsquo;ve been through</h1>
                             {% if user.is_superuser %}
-                            <a href="{% url 'main:create_experience' %}"
-                               class="button project-add-button">
-                                <span aria-hidden="true">+</span>
-                                Add Experience
-                            </a>
+                                <button type="button"
+                                        class="button project-add-button"
+                                        popovertarget="add-experience-modal">
+                                    <span aria-hidden="true">+</span>
+                                    Add Experience
+                                </button>
                             {% endif %}
                         </div>
                     </div>
@@ -85,9 +86,13 @@
             </div>
         </section>
     </main>
+
+    {% if user.is_superuser %}
+        {% include "components/experience_form_modal.html" %}
+    {% endif %}
 {% endblock content %}
 
 {% block extra_js %}
     <script src="{% static 'js/experience-accordion.js' %}?v=20260929-1"></script>
-    <script src="{% static 'js/experience-filter.js' %}?v=20260929-1"></script>
+    <script src="{% static 'js/experience-filter.js' %}?v=20260929-2"></script>
 {% endblock extra_js %}

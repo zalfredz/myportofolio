@@ -11,6 +11,7 @@ if (experienceTimeline) {
     const loadingState = document.getElementById("experience-loading");
     const errorState = document.getElementById("experience-error");
     const emptyState = document.getElementById("experience-empty");
+    const experienceForm = document.getElementById("experience-form");
     const placeholderId = "00000000-0000-0000-0000-000000000000";
     const isAuthenticated = experienceTimeline.dataset.isAuthenticated === "true";
     const canEdit = experienceTimeline.dataset.canEdit === "true";
@@ -50,6 +51,15 @@ if (experienceTimeline) {
         input.name = "csrfmiddlewaretoken";
         input.value = experienceTimeline.dataset.csrfToken;
         return input;
+    };
+
+    const getCookie = (name) => {
+        const cookie = document.cookie
+            .split(";")
+            .map((item) => item.trim())
+            .find((item) => item.startsWith(`${name}=`));
+
+        return cookie ? decodeURIComponent(cookie.slice(name.length + 1)) : null;
     };
 
     const formatMonthYear = (dateValue) => {
@@ -239,6 +249,71 @@ if (experienceTimeline) {
         }
     };
 
+    const getFormErrorMessage = (result, status) => {
+        if (!result.errors) {
+            return result.message || `Something went wrong (status ${status}).`;
+        }
+
+        return Object.values(result.errors)
+            .flat()
+            .map((error) => error.message)
+            .join(" ");
+    };
+
+    const incrementCategoryCounts = (category) => {
+        categoryButtons.forEach((button) => {
+            if (button.dataset.categoryFilter && button.dataset.categoryFilter !== category) {
+                return;
+            }
+
+            const count = button.querySelector("span");
+            if (count) count.textContent = String(Number(count.textContent) + 1);
+        });
+    };
+
+    const addExperience = async (event) => {
+        event.preventDefault();
+
+        const submitButton = experienceForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(experienceForm.dataset.ajaxUrl, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken":
+                        getCookie("csrftoken") || experienceTimeline.dataset.csrfToken,
+                },
+                body: new FormData(experienceForm),
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                showToast(
+                    "Unable to add experience",
+                    getFormErrorMessage(result, response.status),
+                    "error"
+                );
+                return;
+            }
+
+            incrementCategoryCounts(result.category);
+            experienceForm.reset();
+            window.closeExperienceModal();
+            showToast("Experience added", result.message, "success");
+            await fetchExperiences();
+        } catch (error) {
+            console.error("Unable to add experience:", error);
+            showToast(
+                "Unable to add experience",
+                "Could not connect to the server. Please try again.",
+                "error"
+            );
+        } finally {
+            submitButton.disabled = false;
+        }
+    };
+
     searchInput.addEventListener("input", () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(fetchExperiences, debounceDelay);
@@ -255,5 +330,15 @@ if (experienceTimeline) {
     });
 
     sortSelect.addEventListener("change", fetchExperiences);
+
+    window.closeExperienceModal = () => {
+        const modal = document.getElementById("add-experience-modal");
+        if (modal?.matches(":popover-open")) modal.hidePopover();
+    };
+
+    if (experienceForm) {
+        experienceForm.addEventListener("submit", addExperience);
+    }
+
     fetchExperiences();
 }

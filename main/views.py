@@ -104,6 +104,7 @@ def show_experience(request):
         "total_roles": all_experiences.count(),
         "category_filters": category_filters,
         "is_editor": is_editor(request.user),
+        "form": ExperienceForm(),
     }
     return render(request, "experience.html", context)
 
@@ -182,6 +183,29 @@ def create_experience(request):
         "experience": None,
     }
     return render(request, "experience_form.html", context)
+
+
+@require_POST
+def create_experience_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Only the portfolio owner can add experiences."},
+            status=403,
+        )
+
+    form = ExperienceForm(request.POST)
+    if form.is_valid():
+        experience = form.save()
+        return JsonResponse(
+            {
+                "message": "Experience added successfully.",
+                "pk": str(experience.id),
+                "category": experience.category,
+            },
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 
 @login_required(login_url="/login/")

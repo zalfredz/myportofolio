@@ -59,7 +59,76 @@ class MainTest(TestCase):
         self.assertContains(response, 'id="experience-empty"')
         self.assertNotContains(response, self.experience.title)
         self.assertNotContains(response, self.experience.description)
+        self.assertNotContains(response, 'id="add-experience-modal"')
         self.assertContains(response, f'href="{reverse("main:show_main")}"')
+
+    def test_superuser_sees_add_experience_modal(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("main:show_experience"))
+
+        self.assertContains(response, 'popovertarget="add-experience-modal"')
+        self.assertContains(response, 'id="add-experience-modal"')
+        self.assertContains(response, 'id="experience-form"')
+        self.assertContains(
+            response,
+            'data-ajax-url="{}"'.format(reverse("main:create_experience_ajax")),
+        )
+
+    def test_superuser_can_create_experience_with_ajax(self):
+        self.client.force_login(self.superuser)
+        response = self.client.post(
+            reverse("main:create_experience_ajax"),
+            {
+                "title": "Data Science Academy",
+                "description": "Coordinated academy sessions.",
+                "category": "volunteer",
+                "thumbnail": "",
+                "start_date": "2026-04-01",
+                "end_date": "2026-09-01",
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["category"], "volunteer")
+        self.assertTrue(
+            Experience.objects.filter(title="Data Science Academy").exists()
+        )
+
+    def test_ajax_create_experience_rejects_non_superuser(self):
+        self.client.force_login(self.regular_user)
+        response = self.client.post(
+            reverse("main:create_experience_ajax"),
+            {
+                "title": "Unauthorized Experience",
+                "description": "Should not be saved.",
+                "category": "volunteer",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(
+            Experience.objects.filter(title="Unauthorized Experience").exists()
+        )
+
+    def test_ajax_create_experience_returns_validation_errors(self):
+        self.client.force_login(self.superuser)
+        response = self.client.post(
+            reverse("main:create_experience_ajax"),
+            {
+                "title": "",
+                "description": "Missing title.",
+                "category": "internship",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("title", response.json()["errors"])
+
+    def test_ajax_create_experience_only_accepts_post(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("main:create_experience_ajax"))
+
+        self.assertEqual(response.status_code, 405)
 
     def test_empty_experience_page(self):
         Experience.objects.all().delete()
