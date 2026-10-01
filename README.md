@@ -155,3 +155,34 @@ Tidak apa pertanyaan reflektif untuk tugas kali ini
 
 ### AI Disclosure
 Saya tidak menggunakan bantuan AI dalam pengerjaan tugas kali ini. Segala pembuatan, penyesuaian, dan integrasi dengan bagian website lainnya saya kerjakan dan sesuaikan sendiri.
+
+---
+
+### Tugas 5
+
+1. Debouncing adalah teknik menunda suatu proses hingga pengguna berhenti melakukan aksi selama waktu tertentu. Pada pencarian AJAX, request baru dikirim setelah pengguna berhenti mengetik, misalnya selama 300 ms. Teknik ini mengurangi request yang tidak diperlukan, meringankan beban server, dan membuat pencarian lebih efisien.
+
+2. `await` pada `fetch()` membuat eksekusi di dalam fungsi async menunggu sampai Promise dari `fetch()` selesai dan menghasilkan objek `Response`, tanpa memblokir seluruh halaman. Biasanya kita juga menggunakan `await response.json()` untuk menunggu pembacaan data JSON. Tanpa `await`, nilai yang diterima masih berupa Promise sehingga tidak bisa langsung digunakan sebagai respons atau data. Namun, prosesnya tetap dapat ditangani menggunakan `.then()`.
+
+3. XSS (Cross-Site Scripting) adalah serangan dengan menyisipkan kode JavaScript berbahaya ke halaman web agar dijalankan oleh browser pengguna. Template Django melakukan auto-escaping secara bawaan sehingga input seperti tag HTML ditampilkan sebagai teks. Ketika data AJAX dimasukkan melalui `innerHTML`, perlindungan tersebut tidak otomatis berlaku, sehingga browser dapat menafsirkan data sebagai HTML dan menjalankan kode berbahaya. Karena itu, gunakan `textContent` untuk menampilkan teks. AJAX sendiri tidak menyebabkan XSS; risikonya berasal dari cara JavaScript memasukkan data ke halaman.
+
+### AI Disclosure
+Saya juga menggunakan bantuan AI (model KIMI) untuk memahami dan melihat contoh implementasi code yang ingin saya kerjakan. Penggunaan AI tersebut berfungsi sebagai alat bantu dalam proses pemahaman cara implementasinya, sementara penyesuaian code, integrasi dengan bagian website lainnya saya kerjakan dan sesuaikan sendiri.
+
+bisa di cek melalui link berikut: https://www.kimi.ai/share/1a0f6e59-a832-8f58-8000-00008812b349
+
+### Implementasi SARAN KIMI (AI):
+
+`Template Skeleton dan AJAX`
+Saran solusi dari AI:
+Pisahkan view halaman dan endpoint JSON. Template merender kerangka HTML, lalu JavaScript mengambil data melalui `fetch()`. Gunakan `textContent` untuk menampilkan data dengan aman serta sediakan kondisi loading dan error.
+
+Implementasi saya:
+Saya memisahkan halaman Experience dan endpoint JSON. Template menyediakan timeline kosong, sedangkan JavaScript mengambil data dan membangun timeline menggunakan `createElement()` serta `textContent`. Saya juga menyediakan kondisi loading, kosong, dan error. View halaman tetap menyiapkan form, jumlah kategori, dan informasi hak akses.
+
+`View POST AJAX, Validasi, dan Sanitasi Input`
+Saran solusi dari AI:
+Gunakan `ModelForm` untuk validasi, periksa role pengguna, dan kembalikan JSON dengan status 201, 400, atau 403. Bersihkan input melalui `strip_tags` pada method `clean_*`. Contoh mengirim data sebagai JSON serta menggunakan `is_staff` dan `@login_required`.
+
+Implementasi saya:
+Saya mengirim `FormData` sehingga data langsung dibaca melalui `request.POST` dan divalidasi menggunakan `ExperienceForm`. Endpoint memakai `@require_POST` dan pemeriksaan `is_superuser` agar pengguna yang tidak berhak menerima JSON 403. Judul dan deskripsi dibersihkan menggunakan `strip_tags`. Hasilnya ditampilkan melalui toast, kemudian timeline diperbarui tanpa reload halaman.
