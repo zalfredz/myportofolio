@@ -57,6 +57,20 @@ class ExperienceForm(ModelForm):
             "end_date": DateInput(attrs={"type": "date"}),
         }
 
+    def clean_title(self):
+        title = strip_tags(self.cleaned_data["title"]).strip()
+        if not title:
+            raise ValidationError("Experience title cannot contain only HTML tags.")
+        return title
+
+    def clean_description(self):
+        description = strip_tags(self.cleaned_data["description"]).strip()
+        if not description:
+            raise ValidationError(
+                "Experience description cannot contain only HTML tags."
+            )
+        return description
+
 
 class ProjectForm(ModelForm):
     class Meta:

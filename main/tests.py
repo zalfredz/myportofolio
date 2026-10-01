@@ -110,6 +110,33 @@ class MainTest(TestCase):
             Experience.objects.filter(title="Unauthorized Experience").exists()
         )
 
+    def test_ajax_create_experience_rejects_guest(self):
+        response = self.client.post(
+            reverse("main:create_experience_ajax"),
+            {
+                "title": "Guest Experience",
+                "description": "Should not be saved.",
+                "category": "volunteer",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Experience.objects.filter(title="Guest Experience").exists())
+
+    def test_ajax_create_experience_rejects_editor(self):
+        self.client.force_login(self.editor)
+        response = self.client.post(
+            reverse("main:create_experience_ajax"),
+            {
+                "title": "Editor Experience",
+                "description": "Should not be saved.",
+                "category": "volunteer",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Experience.objects.filter(title="Editor Experience").exists())
+
     def test_ajax_create_experience_returns_validation_errors(self):
         self.client.force_login(self.superuser)
         response = self.client.post(
@@ -130,11 +157,51 @@ class MainTest(TestCase):
 
         self.assertEqual(response.status_code, 405)
 
+    def test_ajax_create_experience_strips_html_tags(self):
+        self.client.force_login(self.superuser)
+        response = self.client.post(
+            reverse("main:create_experience_ajax"),
+            {
+                "title": "<b>Teaching Assistant</b>",
+                "description": "Helped <strong>students</strong> learn calculus.",
+                "category": "volunteer",
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        experience = Experience.objects.get(pk=response.json()["pk"])
+        self.assertEqual(experience.title, "Teaching Assistant")
+        self.assertEqual(
+            experience.description,
+            "Helped students learn calculus.",
+        )
+
+    def test_ajax_create_experience_rejects_html_only_title(self):
+        self.client.force_login(self.superuser)
+        response = self.client.post(
+            reverse("main:create_experience_ajax"),
+            {
+                "title": '<img src="x" onerror="alert(1)">',
+                "description": "Unsafe title test.",
+                "category": "volunteer",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("title", response.json()["errors"])
+
     def test_empty_experience_page(self):
         Experience.objects.all().delete()
         response = self.client.get(reverse("main:show_experience"))
 
         self.assertContains(response, "No matching experience")
+
+    def test_empty_experience_api(self):
+        Experience.objects.all().delete()
+        response = self.client.get(reverse("main:get_experiences_json"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [])
 
     def test_experience_search(self):
         Experience.objects.create(
