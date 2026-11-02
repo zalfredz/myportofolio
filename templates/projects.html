@@ -61,11 +61,12 @@
                 </div>
                 <div id="projects-grid"
                      class="projects-grid hide"
-                     data-projects-endpoint="{% url 'main:get_projects_json' %}"
-                     data-star-url="{% url 'main:toggle_star' '00000000-0000-0000-0000-000000000000' %}"
+                     data-projects-endpoint="{% url 'api:project-list' %}"
+                     data-detail-url="{% url 'api:project-detail' '00000000-0000-0000-0000-000000000000' %}"
+                     data-star-url="{% url 'api:project-star' '00000000-0000-0000-0000-000000000000' %}"
                      data-edit-url="{% url 'main:update_project' '00000000-0000-0000-0000-000000000000' %}"
-                     data-delete-url="{% url 'main:delete_project' '00000000-0000-0000-0000-000000000000' %}"
-                     data-csrf-token="{{ csrf_token }}"
+                     data-login-url="{% url 'main:login' %}"
+                     data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
                      data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"></div>
             </div>
         </section>
@@ -77,5 +78,6 @@
 {% endblock content %}
 
 {% block extra_js %}
-    <script src="{% static 'js/project-filter.js' %}?v=20260929-1"></script>
+    {% csrf_token %}
+    <script src="{% static 'js/project-filter.js' %}?v=20261102-1"></script>
 {% endblock extra_js %}

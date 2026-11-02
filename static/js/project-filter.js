@@ -11,8 +11,21 @@ if (projectGrid) {
     const emptyState = document.getElementById("project-empty");
     const projectForm = document.getElementById("project-form");
     const placeholderId = "00000000-0000-0000-0000-000000000000";
+    const isAuthenticated = projectGrid.dataset.isAuthenticated === "true";
     const isSuperuser = projectGrid.dataset.isSuperuser === "true";
     const searchDebounceDelay = 300;
+    const projectFields = [
+        "title",
+        "subtitle",
+        "description",
+        "feature_one_title",
+        "feature_one_description",
+        "feature_two_title",
+        "feature_two_description",
+        "technology_stack",
+        "project_url",
+        "project_image_url",
+    ];
     let projectsAbortController;
     let searchDebounceTimer;
 
@@ -65,52 +78,43 @@ if (projectGrid) {
         return card;
     };
 
-    const createCsrfInput = () => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "csrfmiddlewaretoken";
-        input.value = projectGrid.dataset.csrfToken;
-        return input;
-    };
-
-    const createStarForm = (project, projectId) => {
-        const form = createElement("form", "star-form");
-        form.method = "post";
-        form.action = buildUrl(projectGrid.dataset.starUrl, projectId);
-
-        const button = createElement(
-            "button",
+    const createStarControl = (project) => {
+        const control = createElement(
+            isAuthenticated ? "button" : "a",
             `button button-star${project.is_starred ? " is-starred" : ""}`
         );
-        button.type = "submit";
-        button.title = project.star_count
-            ? `Starred by ${project.starred_by_names.join(", ")}`
+        control.title = project.star_count
+            ? `Starred by ${project.starred_by_names}`
             : "Be the first to star this project";
+
+        if (isAuthenticated) {
+            control.type = "button";
+            control.dataset.action = "star";
+            control.dataset.id = project.id;
+        } else {
+            const next = encodeURIComponent(window.location.pathname);
+            control.href = `${projectGrid.dataset.loginUrl}?next=${next}`;
+        }
 
         const icon = createElement("span", "", "★");
         icon.setAttribute("aria-hidden", "true");
-        button.append(
+        control.append(
             icon,
             document.createTextNode(project.is_starred ? " Unstar " : " Star "),
             createElement("span", "star-count", project.star_count)
         );
-        form.append(createCsrfInput(), button);
-        return form;
+        return control;
     };
 
-    const createDeleteControl = (project, projectId) => {
-        const form = createElement("form");
-        form.method = "post";
-        form.action = buildUrl(projectGrid.dataset.deleteUrl, projectId);
-        form.addEventListener("submit", (event) => {
-            if (!window.confirm(`Delete ${project.title}?`)) event.preventDefault();
-        });
-
+    const createDeleteControl = (project) => {
         const button = createElement(
             "button",
             "project-icon-action project-icon-action--delete"
         );
-        button.type = "submit";
+        button.type = "button";
+        button.dataset.action = "delete";
+        button.dataset.id = project.id;
+        button.dataset.title = project.title;
         button.title = "Delete project";
         button.setAttribute("aria-label", `Delete ${project.title}`);
         button.append(
@@ -121,12 +125,10 @@ if (projectGrid) {
                 "M10 11v5M14 11v5",
             ])
         );
-        form.append(createCsrfInput(), button);
-        return form;
+        return button;
     };
 
-    const buildProjectCardElement = (item) => {
-        const project = item.fields;
+    const buildProjectCardElement = (project) => {
         const article = createElement("article", "project-showcase-card");
         article.dataset.projectCreated = project.created_at;
 
@@ -199,13 +201,13 @@ if (projectGrid) {
         }
 
         const actions = createElement("div", "project-showcase-actions");
-        actions.appendChild(createStarForm(project, item.pk));
+        actions.appendChild(createStarControl(project));
 
         const editLink = createElement(
             "a",
             "project-icon-action project-icon-action--edit"
         );
-        editLink.href = buildUrl(projectGrid.dataset.editUrl, item.pk);
+        editLink.href = buildUrl(projectGrid.dataset.editUrl, project.id);
         editLink.title = "Edit project";
         editLink.setAttribute("aria-label", `Edit ${project.title}`);
         editLink.append(
@@ -217,7 +219,7 @@ if (projectGrid) {
         actions.appendChild(editLink);
 
         if (isSuperuser) {
-            actions.appendChild(createDeleteControl(project, item.pk));
+            actions.appendChild(createDeleteControl(project));
         }
 
         footer.appendChild(actions);
@@ -229,10 +231,7 @@ if (projectGrid) {
     const sortProjects = (projects) => {
         const direction = sortSelect.value === "oldest" ? 1 : -1;
         return projects.sort((first, second) => {
-            return (
-                first.fields.created_at.localeCompare(second.fields.created_at)
-                * direction
-            );
+            return first.created_at.localeCompare(second.created_at) * direction;
         });
     };
 
@@ -256,26 +255,13 @@ if (projectGrid) {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const projects = sortProjects(await response.json());
-            projectGrid.replaceChildren();
-
-            if (!projects.length) {
-                displayPageSection("empty");
-                return;
-            }
-
-            projects.forEach((project) => {
-                projectGrid.appendChild(buildProjectCardElement(project));
-            });
-            displayPageSection("grid");
+            projectGrid.replaceChildren(...projects.map(buildProjectCardElement));
+            displayPageSection(projects.length ? "grid" : "empty");
         } catch (error) {
             if (error.name === "AbortError") return;
             console.error("Unable to load projects:", error);
             displayPageSection("error");
         }
-    };
-
-    const searchProjects = () => {
-        fetchProjects();
     };
 
     const getCookie = (name) => {
@@ -287,15 +273,28 @@ if (projectGrid) {
         return cookie ? decodeURIComponent(cookie.slice(name.length + 1)) : null;
     };
 
-    const getFormErrorMessage = (result, status) => {
-        if (!result.errors) {
-            return result.message || `Something went wrong (status ${status}).`;
-        }
-
-        return Object.values(result.errors)
+    const apiErrorMessage = (data, status) => {
+        const messages = Object.values(data)
             .flat()
-            .map((error) => error.message)
-            .join(" ");
+            .filter((value) => typeof value === "string");
+        return messages.join(" ") || `Request failed (HTTP ${status}).`;
+    };
+
+    const writeProject = async (url, method, payload) => {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: payload === undefined ? undefined : JSON.stringify(payload),
+        });
+        if (response.status === 204) return null;
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(apiErrorMessage(data, response.status));
+        return data;
     };
 
     const addProject = async (event) => {
@@ -305,47 +304,65 @@ if (projectGrid) {
         submitButton.disabled = true;
 
         try {
-            const response = await fetch(projectForm.dataset.ajaxUrl, {
-                method: "POST",
-                headers: { "X-CSRFToken": getCookie("csrftoken") },
-                body: new FormData(projectForm),
-            });
-            const result = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                showToast(
-                    "Unable to add project",
-                    getFormErrorMessage(result, response.status),
-                    "error"
-                );
-                return;
-            }
+            const fields = new FormData(projectForm);
+            const payload = Object.fromEntries(
+                projectFields.map((name) => [name, fields.get(name) ?? ""])
+            );
+            await writeProject(projectGrid.dataset.projectsEndpoint, "POST", payload);
 
             projectForm.reset();
             window.closeProjectModal();
-            showToast("Project added", result.message, "success");
+            showToast("Project added", "Project added successfully.", "success");
             await fetchProjects();
         } catch (error) {
             console.error("Unable to add project:", error);
-            showToast(
-                "Unable to add project",
-                "Could not connect to the server. Please try again.",
-                "error"
-            );
+            showToast("Unable to add project", error.message, "error");
         } finally {
             submitButton.disabled = false;
         }
     };
 
+    projectGrid.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button || button.disabled) return;
+
+        const action = button.dataset.action;
+        if (action === "delete" && !window.confirm(`Delete ${button.dataset.title}?`)) {
+            return;
+        }
+
+        button.disabled = true;
+        try {
+            if (action === "star") {
+                await writeProject(
+                    buildUrl(projectGrid.dataset.starUrl, button.dataset.id),
+                    "POST"
+                );
+            } else {
+                await writeProject(
+                    buildUrl(projectGrid.dataset.detailUrl, button.dataset.id),
+                    "DELETE"
+                );
+                showToast("Project deleted", "Project deleted successfully.", "success");
+            }
+            await fetchProjects();
+        } catch (error) {
+            console.error(`Unable to ${action} project:`, error);
+            showToast("Request failed", error.message, "error");
+        } finally {
+            button.disabled = false;
+        }
+    });
+
     searchInput.addEventListener("input", () => {
         clearTimeout(searchDebounceTimer);
-        searchDebounceTimer = setTimeout(searchProjects, searchDebounceDelay);
+        searchDebounceTimer = setTimeout(fetchProjects, searchDebounceDelay);
     });
 
     searchForm.addEventListener("submit", (event) => {
         event.preventDefault();
         clearTimeout(searchDebounceTimer);
-        searchProjects();
+        fetchProjects();
     });
     sortSelect.addEventListener("change", fetchProjects);
 

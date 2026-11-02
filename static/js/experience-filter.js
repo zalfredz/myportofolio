@@ -17,6 +17,15 @@ if (experienceTimeline) {
     const canEdit = experienceTimeline.dataset.canEdit === "true";
     const isSuperuser = experienceTimeline.dataset.isSuperuser === "true";
     const debounceDelay = 300;
+    const nullableFields = new Set(["thumbnail", "start_date", "end_date"]);
+    const experienceFields = [
+        "title",
+        "description",
+        "category",
+        "thumbnail",
+        "start_date",
+        "end_date",
+    ];
     let selectedCategory = "";
     let debounceTimer;
     let requestController;
@@ -43,14 +52,6 @@ if (experienceTimeline) {
 
     const buildUrl = (template, experienceId) => {
         return template.replace(placeholderId, experienceId);
-    };
-
-    const createCsrfInput = () => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "csrfmiddlewaretoken";
-        input.value = experienceTimeline.dataset.csrfToken;
-        return input;
     };
 
     const getCookie = (name) => {
@@ -84,40 +85,34 @@ if (experienceTimeline) {
         });
     };
 
-    const createStarControl = (experience, experienceId) => {
-        const form = createElement("form", "experience-star-form");
-        form.method = "post";
-        form.action = buildUrl(experienceTimeline.dataset.starUrl, experienceId);
-
-        if (isAuthenticated) {
-            form.appendChild(createCsrfInput());
-        } else {
-            form.addEventListener("submit", (event) => {
-                event.preventDefault();
-                const next = encodeURIComponent(window.location.pathname);
-                window.location.href = `${experienceTimeline.dataset.loginUrl}?next=${next}`;
-            });
-        }
-
-        const button = createElement(
-            "button",
+    const createStarControl = (experience) => {
+        const control = createElement(
+            isAuthenticated ? "button" : "a",
             `experience-action experience-action--star${
                 experience.is_starred ? " is-starred" : ""
             }`
         );
-        button.type = "submit";
-        button.title = experience.star_count
-            ? `Starred by ${experience.starred_by_names.join(", ")}`
+        control.title = experience.star_count
+            ? `Starred by ${experience.starred_by_names}`
             : "Be the first to star this experience";
+
+        if (isAuthenticated) {
+            control.type = "button";
+            control.dataset.action = "star";
+            control.dataset.id = experience.id;
+        } else {
+            const next = encodeURIComponent(window.location.pathname);
+            control.href = `${experienceTimeline.dataset.loginUrl}?next=${next}`;
+        }
+
         const icon = createElement("span", "", "★");
         icon.setAttribute("aria-hidden", "true");
-        button.append(
+        control.append(
             icon,
             document.createTextNode(experience.is_starred ? " Unstar " : " Star "),
             createElement("span", "experience-star-count", experience.star_count)
         );
-        form.appendChild(button);
-        return form;
+        return control;
     };
 
     const createEditControl = (experience, experienceId) => {
@@ -137,20 +132,16 @@ if (experienceTimeline) {
         return link;
     };
 
-    const createDeleteControl = (experience, experienceId) => {
-        const form = createElement("form");
-        form.method = "post";
-        form.action = buildUrl(experienceTimeline.dataset.deleteUrl, experienceId);
-        form.appendChild(createCsrfInput());
-        form.addEventListener("submit", (event) => {
-            if (!window.confirm(`Delete ${experience.title}?`)) event.preventDefault();
-        });
-
+    const createDeleteControl = (experience) => {
         const button = createElement(
             "button",
             "experience-action experience-action--delete"
         );
-        button.type = "submit";
+        button.type = "button";
+        button.dataset.action = "delete";
+        button.dataset.id = experience.id;
+        button.dataset.title = experience.title;
+        button.dataset.category = experience.category;
         button.setAttribute("aria-label", `Delete ${experience.title}`);
         button.append(
             createSvg([
@@ -161,12 +152,10 @@ if (experienceTimeline) {
             ]),
             createElement("span", "", "Delete Experience")
         );
-        form.appendChild(button);
-        return form;
+        return button;
     };
 
-    const buildExperienceElement = (item) => {
-        const experience = item.fields;
+    const buildExperienceElement = (experience) => {
         const details = createElement("details", "timeline-item");
         const summary = createElement("summary", "timeline-summary");
         const badges = createElement("div", "timeline-badges");
@@ -199,11 +188,9 @@ if (experienceTimeline) {
         );
 
         const actions = createElement("div", "timeline-actions");
-        actions.appendChild(createStarControl(experience, item.pk));
-        if (canEdit) actions.appendChild(createEditControl(experience, item.pk));
-        if (isSuperuser) {
-            actions.appendChild(createDeleteControl(experience, item.pk));
-        }
+        actions.appendChild(createStarControl(experience));
+        if (canEdit) actions.appendChild(createEditControl(experience, experience.id));
+        if (isSuperuser) actions.appendChild(createDeleteControl(experience));
         contentBody.appendChild(actions);
         content.appendChild(contentBody);
         details.append(summary, content);
@@ -249,25 +236,38 @@ if (experienceTimeline) {
         }
     };
 
-    const getFormErrorMessage = (result, status) => {
-        if (!result.errors) {
-            return result.message || `Something went wrong (status ${status}).`;
-        }
-
-        return Object.values(result.errors)
+    const apiErrorMessage = (data, status) => {
+        const messages = Object.values(data)
             .flat()
-            .map((error) => error.message)
-            .join(" ");
+            .filter((value) => typeof value === "string");
+        return messages.join(" ") || `Request failed (HTTP ${status}).`;
     };
 
-    const incrementCategoryCounts = (category) => {
+    const writeExperience = async (url, method, payload) => {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: payload === undefined ? undefined : JSON.stringify(payload),
+        });
+        if (response.status === 204) return null;
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(apiErrorMessage(data, response.status));
+        return data;
+    };
+
+    const adjustCategoryCounts = (category, delta) => {
         categoryButtons.forEach((button) => {
             if (button.dataset.categoryFilter && button.dataset.categoryFilter !== category) {
                 return;
             }
 
             const count = button.querySelector("span");
-            if (count) count.textContent = String(Number(count.textContent) + 1);
+            if (count) count.textContent = String(Number(count.textContent) + delta);
         });
     };
 
@@ -278,41 +278,64 @@ if (experienceTimeline) {
         submitButton.disabled = true;
 
         try {
-            const response = await fetch(experienceForm.dataset.ajaxUrl, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken":
-                        getCookie("csrftoken") || experienceTimeline.dataset.csrfToken,
-                },
-                body: new FormData(experienceForm),
-            });
-            const result = await response.json().catch(() => ({}));
+            const fields = new FormData(experienceForm);
+            const payload = Object.fromEntries(
+                experienceFields.map((name) => {
+                    const value = fields.get(name) ?? "";
+                    return [name, nullableFields.has(name) && !value ? null : value];
+                })
+            );
+            const experience = await writeExperience(
+                experienceTimeline.dataset.experiencesEndpoint,
+                "POST",
+                payload
+            );
 
-            if (!response.ok) {
-                showToast(
-                    "Unable to add experience",
-                    getFormErrorMessage(result, response.status),
-                    "error"
-                );
-                return;
-            }
-
-            incrementCategoryCounts(result.category);
+            adjustCategoryCounts(experience.category, 1);
             experienceForm.reset();
             window.closeExperienceModal();
-            showToast("Experience added", result.message, "success");
+            showToast("Experience added", "Experience added successfully.", "success");
             await fetchExperiences();
         } catch (error) {
             console.error("Unable to add experience:", error);
-            showToast(
-                "Unable to add experience",
-                "Could not connect to the server. Please try again.",
-                "error"
-            );
+            showToast("Unable to add experience", error.message, "error");
         } finally {
             submitButton.disabled = false;
         }
     };
+
+    experienceTimeline.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button || button.disabled) return;
+
+        const action = button.dataset.action;
+        if (action === "delete" && !window.confirm(`Delete ${button.dataset.title}?`)) {
+            return;
+        }
+
+        button.disabled = true;
+        try {
+            if (action === "star") {
+                await writeExperience(
+                    buildUrl(experienceTimeline.dataset.starUrl, button.dataset.id),
+                    "POST"
+                );
+            } else {
+                await writeExperience(
+                    buildUrl(experienceTimeline.dataset.detailUrl, button.dataset.id),
+                    "DELETE"
+                );
+                adjustCategoryCounts(button.dataset.category, -1);
+                showToast("Experience deleted", "Experience deleted successfully.", "success");
+            }
+            await fetchExperiences();
+        } catch (error) {
+            console.error(`Unable to ${action} experience:`, error);
+            showToast("Request failed", error.message, "error");
+        } finally {
+            button.disabled = false;
+        }
+    });
 
     searchInput.addEventListener("input", () => {
         clearTimeout(debounceTimer);

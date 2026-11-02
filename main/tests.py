@@ -53,7 +53,7 @@ class MainTest(TestCase):
         self.assertTemplateUsed(response, "experience.html")
         self.assertTemplateUsed(response, "base.html")
         self.assertContains(response, 'id="experience-timeline"')
-        self.assertContains(response, reverse("main:get_experiences_json"))
+        self.assertContains(response, reverse("api:experience-list"))
         self.assertContains(response, 'id="experience-loading"')
         self.assertContains(response, 'id="experience-error"')
         self.assertContains(response, 'id="experience-empty"')
@@ -433,7 +433,7 @@ class MainTest(TestCase):
         response = self.client.get(reverse("main:show_projects"))
 
         self.assertContains(response, 'id="projects-grid"')
-        self.assertContains(response, reverse("main:get_projects_json"))
+        self.assertContains(response, reverse("api:project-list"))
         self.assertNotContains(response, 'id="add-project-modal"')
         self.assertNotContains(response, self.project.title)
 

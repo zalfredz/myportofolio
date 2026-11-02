@@ -74,12 +74,11 @@
                 </div>
                 <div id="experience-timeline"
                      class="experience-timeline hide"
-                     data-experiences-endpoint="{% url 'main:get_experiences_json' %}"
-                     data-star-url="{% url 'main:toggle_experience_star' '00000000-0000-0000-0000-000000000000' %}"
+                     data-experiences-endpoint="{% url 'api:experience-list' %}"
+                     data-detail-url="{% url 'api:experience-detail' '00000000-0000-0000-0000-000000000000' %}"
+                     data-star-url="{% url 'api:experience-star' '00000000-0000-0000-0000-000000000000' %}"
                      data-edit-url="{% url 'main:update_experience' '00000000-0000-0000-0000-000000000000' %}"
-                     data-delete-url="{% url 'main:delete_experience' '00000000-0000-0000-0000-000000000000' %}"
                      data-login-url="{% url 'main:login' %}"
-                     data-csrf-token="{{ csrf_token }}"
                      data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
                      data-can-edit="{% if user.is_superuser or is_editor %}true{% else %}false{% endif %}"
                      data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"></div>
@@ -93,6 +92,7 @@
 {% endblock content %}
 
 {% block extra_js %}
+    {% csrf_token %}
     <script src="{% static 'js/experience-accordion.js' %}?v=20260929-1"></script>
-    <script src="{% static 'js/experience-filter.js' %}?v=20260929-2"></script>
+    <script src="{% static 'js/experience-filter.js' %}?v=20261102-1"></script>
 {% endblock extra_js %}
