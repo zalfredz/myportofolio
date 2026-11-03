@@ -77,7 +77,6 @@
                      data-experiences-endpoint="{% url 'api:experience-list' %}"
                      data-detail-url="{% url 'api:experience-detail' '00000000-0000-0000-0000-000000000000' %}"
                      data-star-url="{% url 'api:experience-star' '00000000-0000-0000-0000-000000000000' %}"
-                     data-edit-url="{% url 'main:update_experience' '00000000-0000-0000-0000-000000000000' %}"
                      data-login-url="{% url 'main:login' %}"
                      data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
                      data-can-edit="{% if user.is_superuser or is_editor %}true{% else %}false{% endif %}"
@@ -89,10 +88,13 @@
     {% if user.is_superuser %}
         {% include "components/experience_form_modal.html" %}
     {% endif %}
+    {% if user.is_superuser or is_editor %}
+        {% include "components/experience_edit_modal.html" %}
+    {% endif %}
 {% endblock content %}
 
 {% block extra_js %}
     {% csrf_token %}
     <script src="{% static 'js/experience-accordion.js' %}?v=20260929-1"></script>
-    <script src="{% static 'js/experience-filter.js' %}?v=20261102-1"></script>
+    <script src="{% static 'js/experience-filter.js' %}?v=20261103-1"></script>
 {% endblock extra_js %}

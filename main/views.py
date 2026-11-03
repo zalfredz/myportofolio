@@ -105,6 +105,7 @@ def show_experience(request):
         "category_filters": category_filters,
         "is_editor": is_editor(request.user),
         "form": ExperienceForm(),
+        "edit_form": ExperienceForm(auto_id="edit_%s"),
     }
     return render(request, "experience.html", context)
 

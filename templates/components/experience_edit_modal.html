@@ -1,0 +1,77 @@
+<div id="edit-experience-modal"
+     class="project-form-modal experience-form-modal"
+     popover="auto"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="edit-experience-modal-title">
+    <button type="button"
+            class="project-form-modal__backdrop"
+            popovertarget="edit-experience-modal"
+            popovertargetaction="hide"
+            aria-label="Close edit experience form"></button>
+
+    <div class="project-form-modal__content experience-form-modal__content">
+        <button type="button"
+                class="project-form-modal__close"
+                popovertarget="edit-experience-modal"
+                popovertargetaction="hide"
+                aria-label="Close edit experience form">&times;</button>
+
+        <h2 id="edit-experience-modal-title">Edit Experience</h2>
+        <form id="edit-experience-form" class="experience-editor experience-editor--modal">
+            <div class="experience-editor__grid experience-editor__grid--top">
+                <div class="experience-editor__field">
+                    <label for="{{ edit_form.title.id_for_label }}">
+                        {{ edit_form.title.label }}
+                        <span class="experience-editor__required">*</span>
+                    </label>
+                    {{ edit_form.title }}
+                </div>
+                <div class="experience-editor__field">
+                    <label for="{{ edit_form.category.id_for_label }}">
+                        {{ edit_form.category.label }}
+                        <span class="experience-editor__required">*</span>
+                    </label>
+                    {{ edit_form.category }}
+                </div>
+            </div>
+
+            <div class="experience-editor__field">
+                <label for="{{ edit_form.description.id_for_label }}">
+                    {{ edit_form.description.label }}
+                    <span class="experience-editor__required">*</span>
+                </label>
+                {{ edit_form.description }}
+            </div>
+
+            <div class="experience-editor__field">
+                <label for="{{ edit_form.thumbnail.id_for_label }}">Image / Logo URL</label>
+                {{ edit_form.thumbnail }}
+            </div>
+
+            <div class="experience-editor__grid experience-editor__grid--dates">
+                <div class="experience-editor__field">
+                    <label for="{{ edit_form.start_date.id_for_label }}">
+                        {{ edit_form.start_date.label }}
+                    </label>
+                    {{ edit_form.start_date }}
+                </div>
+                <div class="experience-editor__field">
+                    <label for="{{ edit_form.end_date.id_for_label }}">
+                        {{ edit_form.end_date.label }}
+                        <span class="experience-editor__optional">Optional</span>
+                    </label>
+                    {{ edit_form.end_date }}
+                </div>
+            </div>
+
+            <div class="experience-editor__actions">
+                <button type="button"
+                        class="button button-secondary"
+                        popovertarget="edit-experience-modal"
+                        popovertargetaction="hide">Cancel</button>
+                <button type="submit" class="button">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
