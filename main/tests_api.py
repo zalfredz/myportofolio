@@ -299,3 +299,16 @@ class ExperienceAPITest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Experience.objects.count(), 2)
+
+    def test_editor_session_patch_with_csrf(self):
+        client = APIClient(enforce_csrf_checks=True)
+        self.assertTrue(client.login(username="editor", password="test-password"))
+        client.get(self.list_url, HTTP_ACCEPT="text/html")
+        token = client.cookies["csrftoken"].value
+        response = client.patch(
+            self.detail_url, {"title": "Asisten Dosen DDP"}, format="json",
+            HTTP_X_CSRFTOKEN=token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, "Asisten Dosen DDP")
