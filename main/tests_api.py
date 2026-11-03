@@ -276,3 +276,26 @@ class ExperienceAPITest(APITestCase):
         response = self.client.post(self.star_url)
         self.assertFalse(response.data["is_starred"])
         self.assertEqual(response.data["star_count"], 0)
+
+    def test_missing_experience(self):
+        url = reverse("api:experience-detail", args=[uuid.uuid4()])
+        self.assertEqual(self.client.get(url).status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_session_write_without_csrf_is_rejected(self):
+        client = APIClient(enforce_csrf_checks=True)
+        self.assertTrue(client.login(username="owner", password="test-password"))
+        response = client.post(self.list_url, self.payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Experience.objects.count(), 1)
+
+    def test_session_write_with_csrf_succeeds(self):
+        client = APIClient(enforce_csrf_checks=True)
+        client.login(username="owner", password="test-password")
+        page = client.get(self.list_url, HTTP_ACCEPT="text/html")
+        self.assertEqual(page.status_code, status.HTTP_200_OK)
+        token = client.cookies["csrftoken"].value
+        response = client.post(
+            self.list_url, self.payload, format="json", HTTP_X_CSRFTOKEN=token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Experience.objects.count(), 2)
