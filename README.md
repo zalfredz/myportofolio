@@ -5,7 +5,7 @@ Semester : 3
 
 #### Deskripsi Proyek
 
-MyPortofolio adalah website portofolio pribadi berbasis Django yang menggunakan pola Model-View-Template (MVT). Website ini menyediakan halaman Profile, Experience, dan Projects. Data Experience dan Projects disimpan di database, dapat ditambahkan, diubah, atau dihapus melalui form, serta tersedia melalui endpoint JSON. Halaman Experience menyediakan filter kategori dan pengurutan data, sedangkan halaman Projects menyediakan pencarian dan pengurutan proyek.
+MyPortofolio adalah website portofolio pribadi berbasis Django yang menggunakan pola Model-View-Template (MVT). Website ini menyediakan halaman Profile, Experience, dan Projects. Data Experience dan Projects disimpan di database, dapat ditambahkan, diubah, atau dihapus melalui form, serta tersedia melalui REST API yang dibangun dengan Django REST Framework di `/api/v1/`. Halaman Experience menyediakan filter kategori dan pengurutan data, sedangkan halaman Projects menyediakan pencarian dan pengurutan proyek.
 
 #### Instruksi Setup
 
@@ -46,12 +46,12 @@ MyPortofolio adalah website portofolio pribadi berbasis Django yang menggunakan 
    python manage.py runserver
    ```
 
-   Website dapat dibuka melalui `http://127.0.0.1:8000/`.
+   Website dapat dibuka melalui `http://127.0.0.1:8000/`. API dapat dibuka melalui Browsable API di `http://127.0.0.1:8000/api/v1/experiences/` dan `http://127.0.0.1:8000/api/v1/projects/`.
 
 7. Jalankan unit test.
 
    ```powershell
-   python manage.py test
+   python manage.py test main
    ```
 
 ---
@@ -186,3 +186,18 @@ Gunakan `ModelForm` untuk validasi, periksa role pengguna, dan kembalikan JSON d
 
 Implementasi saya:
 Saya mengirim `FormData` sehingga data langsung dibaca melalui `request.POST` dan divalidasi menggunakan `ExperienceForm`. Endpoint memakai `@require_POST` dan pemeriksaan `is_superuser` agar pengguna yang tidak berhak menerima JSON 403. Judul dan deskripsi dibersihkan menggunakan `strip_tags`. Hasilnya ditampilkan melalui toast, kemudian timeline diperbarui tanpa reload halaman.
+
+---
+
+### Tugas 6
+
+1. REST adalah gaya arsitektur API yang memperlakukan data sebagai resource dengan URL sendiri, misalnya `/api/v1/experiences/<id>/`, lalu aksinya ditentukan oleh HTTP method (GET, POST, PUT/PATCH, DELETE) dan hasilnya ditunjukkan lewat status code (201, 400, 403, 404, 204). Karena itu, mengembalikan JSON saja belum cukup jika URL, method, dan status code tidak dipakai sesuai fungsinya. PUT mengganti seluruh isi resource sehingga semua field wajib dikirim, cocok saat seluruh form disimpan ulang. PATCH hanya mengubah field yang dikirim, cocok saat Editor hanya mengganti judul Experience.
+
+2. Serializer mengubah objek model menjadi JSON dan sebaliknya memvalidasi input sebelum disimpan ke database. Dibandingkan merakit dictionary manual dengan `JsonResponse`, daftar field cukup ditulis sekali untuk daftar, detail, create, dan update. Validasi juga terpusat di `validate_<field>`, error otomatis dikembalikan dengan status 400, dan field sensitif tidak ikut tampil karena hanya field yang ditulis eksplisit yang dikirim.
+
+3. Autentikasi menentukan siapa pengguna yang mengirim request, misalnya `SessionAuthentication` yang mengisi `request.user` dari session login. Otorisasi menentukan apa yang boleh dilakukan pengguna tersebut, misalnya `IsPortfolioOwnerOrEditorOrReadOnly`. Hak akses harus diperiksa di server karena menyembunyikan tombol hanya mengubah tampilan, sedangkan request tetap bisa dikirim langsung ke API lewat Browsable API, `curl`, atau console browser.
+
+4. Dengan `SessionAuthentication`, browser otomatis mengirim cookie session, termasuk saat request dipicu oleh situs lain. Token CSRF di header `X-CSRFToken` membuktikan bahwa request berasal dari halaman kita sendiri. `force_authenticate` tidak cukup untuk mengujinya karena langsung menetapkan `request.user` tanpa melalui proses login dan pemeriksaan CSRF, sehingga test CSRF perlu memakai `APIClient(enforce_csrf_checks=True)` dan `.login()`.
+
+### AI Disclosure
+Saya tidak menggunakan bantuan AI dalam pengerjaan tugas kali ini. Segala pembuatan, penyesuaian, dan integrasi dengan bagian website lainnya saya kerjakan dan sesuaikan sendiri.
