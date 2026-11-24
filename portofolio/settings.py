@@ -53,11 +53,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Harus sebelum middleware yang bisa membuat response (WhiteNoise, Common).
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -85,6 +89,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'portofolio.wsgi.application'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # Token untuk klien mobile, session untuk halaman web.
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+}
+
+# CORS untuk Flutter Web (Chrome) saat pengembangan lokal.
+# Batasi di production, misalnya dengan nilai dari environment variable.
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Database
